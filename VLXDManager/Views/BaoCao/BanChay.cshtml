@@ -1,0 +1,117 @@
+@model List<VLXDManager.Models.SanPhamBanChayViewModel>
+@{
+    ViewData["Title"] = "Hàng bán chạy";
+    int nam = ViewBag.Nam ?? DateTime.Now.Year;
+    var data = Model ?? new List<VLXDManager.Models.SanPhamBanChayViewModel>();
+}
+
+@section Breadcrumb {
+    <li class="breadcrumb-item">Báo cáo</li>
+    <li class="breadcrumb-item active">Hàng bán chạy</li>
+}
+
+<div class="page-header">
+    <div class="page-title"><i class="fas fa-fire text-danger me-2"></i>Hàng bán chạy nhất</div>
+    <a href="javascript:window.print()" class="btn btn-outline no-print">
+        <i class="fas fa-print"></i> In báo cáo
+    </a>
+</div>
+
+<!-- LỌC NĂM -->
+<div class="search-bar no-print">
+    <form method="get">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label">Năm thống kê</label>
+                <select name="nam" class="form-select">
+                    @for (int y = DateTime.Now.Year; y >= DateTime.Now.Year - 4; y--)
+                    {
+                        if (y == nam)
+                        {
+                            <option value="@y" selected>Năm @y</option>
+                        }
+                        else
+                        {
+                            <option value="@y">Năm @y</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100"><i class="fas fa-search"></i> Xem</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- BẢNG TOP SẢN PHẨM -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title"><i class="fas fa-trophy text-warning"></i> Top 20 vật tư bán chạy năm @nam</div>
+    </div>
+    <div class="card-body p-0">
+        <table class="table-vlxd">
+            <thead>
+                <tr>
+                    <th class="text-center" style="width:60px">Xếp hạng</th>
+                    <th>Tên vật tư</th>
+                    <th>Loại</th>
+                    <th class="text-center">ĐVT</th>
+                    <th class="text-center">Tổng SL bán</th>
+                    <th class="text-end">Doanh thu</th>
+                    <th style="width:160px">Tỷ trọng</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    int idx = 1;
+                    decimal tongDT = 0;
+                    foreach (var item in Model)
+                    {
+                        tongDT += item.TongDoanhThu;
+                    }
+                }
+                @foreach (var item in Model)
+                {
+                    var tyTrong = tongDT > 0 ? item.TongDoanhThu / tongDT * 100 : 0;
+                    string medal = idx == 1 ? "🥇" : idx == 2 ? "🥈" : idx == 3 ? "🥉" : $"#{idx}";
+                    <tr style="@(idx <= 3 ? "background:#fffbeb" : "")">
+                        <td class="text-center" style="font-size:18px">@medal</td>
+                        <td><div class="fw-600">@item.TenVatTu</div></td>
+                        <td><span class="badge bg-light text-dark border small">@item.LoaiName</span></td>
+                        <td class="text-center text-muted">@item.DonVi</td>
+                        <td class="text-center fw-700 text-primary">@item.TongSoLuong</td>
+                        <td class="text-end fw-700">@item.TongDoanhThu.ToString("N0")đ</td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div style="flex:1;height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden">
+                                    <div style="height:100%;width:@tyTrong%;background:linear-gradient(90deg,#1e40af,#3b82f6);border-radius:4px;min-width:2px"></div>
+                                </div>
+                                <small class="fw-600">@tyTrong.ToString("N1")%</small>
+                            </div>
+                        </td>
+                    </tr>
+                    idx++;
+                }
+            </tbody>
+            @if (tongDT > 0)
+            {
+                <tfoot style="background:#f8fafc">
+                    <tr>
+                        <td colspan="5" class="fw-700 px-4 py-3">Tổng doanh thu Top 20</td>
+                        <td class="text-end fw-800 text-primary">@tongDT.ToString("N0")đ</td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            }
+        </table>
+
+        @if (!Model.Any())
+        {
+            <div class="text-center py-5 text-muted">
+                <i class="fas fa-chart-bar fa-3x mb-3 d-block opacity-25"></i>
+                Không có dữ liệu cho năm @nam
+            </div>
+        }
+    </div>
+</div>

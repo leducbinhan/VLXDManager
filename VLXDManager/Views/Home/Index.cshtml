@@ -1,0 +1,211 @@
+﻿@model VLXDManager.Models.DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+@section Breadcrumb {
+    <li class="breadcrumb-item active">Dashboard</li>
+}
+
+<!-- STATS CARDS -->
+<div class="stats-grid">
+    <div class="stat-card blue">
+        <div class="stat-icon"><i class="fas fa-boxes-stacked"></i></div>
+        <div>
+            <div class="stat-value">@Model.TongVatTu.ToString("N0")</div>
+            <div class="stat-label">Tổng loại vật tư</div>
+        </div>
+    </div>
+    <div class="stat-card green">
+        <div class="stat-icon"><i class="fas fa-users"></i></div>
+        <div>
+            <div class="stat-value">@Model.TongKhachHang.ToString("N0")</div>
+            <div class="stat-label">Khách hàng</div>
+        </div>
+    </div>
+    <div class="stat-card amber">
+        <div class="stat-icon"><i class="fas fa-file-invoice"></i></div>
+        <div>
+            <div class="stat-value">@Model.DonHangHomNay.ToString("N0")</div>
+            <div class="stat-label">Đơn hàng hôm nay</div>
+        </div>
+    </div>
+    <div class="stat-card red">
+        <div class="stat-icon"><i class="fas fa-triangle-exclamation"></i></div>
+        <div>
+            <div class="stat-value">@Model.VatTuSapHet.ToString("N0")</div>
+            <div class="stat-label">Vật tư sắp hết</div>
+        </div>
+    </div>
+</div>
+
+<!-- REVENUE CARDS -->
+<div class="stats-grid" style="margin-bottom:24px">
+    <div class="stat-card green" style="grid-column: span 1">
+        <div class="stat-icon"><i class="fas fa-coins"></i></div>
+        <div>
+            <div class="stat-value" style="font-size:18px">@Model.DoanhThuHomNay.ToString("N0")đ</div>
+            <div class="stat-label">Doanh thu hôm nay</div>
+        </div>
+    </div>
+    <div class="stat-card blue" style="grid-column: span 1">
+        <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
+        <div>
+            <div class="stat-value" style="font-size:18px">@Model.DoanhThuThangNay.ToString("N0")đ</div>
+            <div class="stat-label">Doanh thu tháng này</div>
+        </div>
+    </div>
+    <div class="stat-card amber" style="grid-column: span 2">
+        <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+        <div>
+            <div class="stat-value" style="font-size:20px">@Model.DoanhThuNamNay.ToString("N0")đ</div>
+            <div class="stat-label">Tổng doanh thu năm @DateTime.Now.Year</div>
+        </div>
+    </div>
+</div>
+
+<!-- CHART + QUICK LIST -->
+<div class="dashboard-grid">
+    <!-- BIỂU ĐỒ DOANH THU -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title"><i class="fas fa-chart-bar"></i> Doanh thu theo tháng (@DateTime.Now.Year)</div>
+            <a asp-controller="BaoCao" asp-action="DoanhThu" class="btn btn-outline btn-sm">Xem chi tiết</a>
+        </div>
+        <div class="card-body">
+            <div class="chart-container">
+                <canvas id="revenueChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- ĐƠN HÀNG GẦN ĐÂY -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title"><i class="fas fa-clock"></i> Đơn hàng gần đây</div>
+            <a asp-controller="DonHang" asp-action="Create" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus"></i> Tạo đơn
+            </a>
+        </div>
+        <div style="overflow-y:auto; max-height:320px;">
+            @foreach (var dh in Model.DonHangGanDay)
+            {
+                <div class="d-flex align-items-center justify-content-between px-3 py-2" style="border-bottom:1px solid #f1f5f9">
+                    <div>
+                        <div class="fw-600 text-primary small">@dh.SoDH</div>
+                        <div class="text-muted" style="font-size:12px">@(dh.KhachHang?.TenKH ?? "Khách lẻ")</div>
+                    </div>
+                    <div class="text-end">
+                        <div class="fw-600" style="font-size:13px">@dh.ThanhTien.ToString("N0")đ</div>
+                        @{
+                            var badgeClass = dh.TrangThai switch
+                            {
+                                "Đã giao" => "badge-giao",
+                                "Đã xác nhận" => "badge-xacnhan",
+                                "Đã hủy" => "badge-huy",
+                                _ => "badge-moi"
+                            };
+                        }
+                        <span class="badge-status @badgeClass" style="font-size:11px">@dh.TrangThai</span>
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="text-center py-2">
+            <a asp-controller="DonHang" asp-action="Index" class="text-primary small">Xem tất cả →</a>
+        </div>
+    </div>
+</div>
+
+<!-- VẬT TƯ SẮP HẾT -->
+@if (Model.VatTuSapHetList.Any())
+{
+    <div class="card mt-4">
+        <div class="card-header">
+            <div class="card-title text-danger"><i class="fas fa-triangle-exclamation"></i> Vật tư sắp hết hàng</div>
+            <a asp-controller="VatTu" asp-action="Index" asp-route-chiSapHet="true" class="btn btn-outline btn-sm">Xem tất cả</a>
+        </div>
+        <div class="card-body p-0">
+            <table class="table-vlxd">
+                <thead>
+                    <tr>
+                        <th>Tên vật tư</th>
+                        <th>Loại</th>
+                        <th class="text-center">Tồn kho</th>
+                        <th class="text-center">Tồn tối thiểu</th>
+                        <th>Tình trạng</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var vt in Model.VatTuSapHetList)
+                    {
+                        var pct = vt.SoLuongMin > 0 ? (double)vt.SoLuongTon / vt.SoLuongMin * 100 : 0;
+                        var cls = pct <= 0 ? "stock-crit" : pct <= 50 ? "stock-low" : "stock-ok";
+                        <tr>
+                            <td>
+                                <div class="fw-600">@vt.TenVatTu</div>
+                                <div class="text-muted small">@vt.MaHang</div>
+                            </td>
+                            <td><span class="text-muted">@vt.DanhMucLoai?.TenLoai</span></td>
+                            <td class="text-center"><span class="fw-700 text-danger">@vt.SoLuongTon</span> @vt.DonVi</td>
+                            <td class="text-center text-muted">@vt.SoLuongMin @vt.DonVi</td>
+                            <td style="width:150px">
+                                <div class="@cls">
+                                    <div class="stock-bar">
+                                        <div class="stock-fill" style="width:@(Math.Min(100, pct))%"></div>
+                                    </div>
+                                    <div style="font-size:11px;margin-top:3px;color:var(--text-muted)">
+                                        @(vt.SoLuongTon == 0 ? "Hết hàng" : "Cần nhập thêm")
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        // Biểu đồ doanh thu
+        const chartData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DoanhThuTheoThang));
+        const labels = Array.from({ length: 12 }, (_, i) => 'T' + (i + 1));
+        const doanhThu = Array(12).fill(0);
+        chartData.forEach(d => doanhThu[d.Thang - 1] = d.DoanhThu);
+
+        new Chart(document.getElementById('revenueChart'), {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [{
+                    label: 'Doanh thu (đồng)',
+                    data: doanhThu,
+                    backgroundColor: 'rgba(30, 64, 175, 0.8)',
+                    borderRadius: 6,
+                    borderSkipped: false,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => new Intl.NumberFormat('vi-VN').format(ctx.parsed.y) + 'đ'
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        ticks: { callback: v => new Intl.NumberFormat('vi-VN', { notation: 'compact' }).format(v) + 'đ' },
+                        grid: { color: '#f1f5f9' }
+                    },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    </script>
+}

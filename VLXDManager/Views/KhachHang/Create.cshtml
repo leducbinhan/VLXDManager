@@ -1,0 +1,79 @@
+﻿@model VLXDManager.Models.KhachHang
+@{
+    ViewData["Title"] = "Thêm Khách hàng";
+}
+
+@section Breadcrumb {
+    <li class="breadcrumb-item"><a asp-action="Index">Khách hàng</a></li>
+    <li class="breadcrumb-item active">Thêm mới</li>
+}
+
+<div class="page-header">
+    <div class="page-title"><i class="fas fa-user-plus text-primary me-2"></i>Thêm Khách hàng mới</div>
+    <a asp-action="Index" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Quay lại</a>
+</div>
+
+<form asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
+    <div class="row g-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title"><i class="fas fa-user"></i> Thông tin khách hàng</div>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-600">Mã khách hàng <span class="text-danger">*</span></label>
+                            <input asp-for="MaKHCode" class="form-control" value="@ViewBag.MaKHCode" placeholder="KH001" />
+                            <span asp-validation-for="MaKHCode" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label fw-600">Tên khách hàng <span class="text-danger">*</span></label>
+                            <input asp-for="TenKH" class="form-control" placeholder="Tên cá nhân hoặc công ty..." />
+                            <span asp-validation-for="TenKH" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-600">Số điện thoại</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                <input asp-for="SoDienThoai" class="form-control" placeholder="0901 234 567" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-600">Email</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                <input asp-for="Email" class="form-control" placeholder="email@example.com" />
+                            </div>
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-600">Địa chỉ</label>
+                            <input asp-for="DiaChi" class="form-control" placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố..." />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-600">Ghi chú</label>
+                            <textarea asp-for="GhiChu" class="form-control" rows="3"
+                                      placeholder="Ghi chú về khách hàng, lịch sử mua hàng, yêu cầu đặc biệt..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header"><div class="card-title"><i class="fas fa-save"></i> Lưu</div></div>
+                <div class="card-body d-flex flex-column gap-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-user-plus"></i> Thêm khách hàng
+                    </button>
+                    <a asp-action="Index" class="btn btn-outline w-100">
+                        <i class="fas fa-times"></i> Hủy
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

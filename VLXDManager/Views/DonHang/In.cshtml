@@ -1,0 +1,329 @@
+﻿@model VLXDManager.Models.DonHang
+@{
+    ViewData["Title"] = "In đơn hàng " + Model.SoDH;
+    Layout = null; // Không dùng layout chính
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <title>Đơn hàng @Model.SoDH</title>
+    <style>
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+
+            body {
+                font-family: 'Times New Roman', serif;
+                font-size: 13px;
+                color: #000;
+                background: white;
+            }
+
+            .container {
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 20px;
+            }
+
+            .header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                margin-bottom: 20px;
+                padding-bottom: 15px;
+                border-bottom: 2px solid #000;
+            }
+
+            .company-name {
+                font-size: 20px;
+                font-weight: bold;
+                text-transform: uppercase;
+            }
+
+            .company-info {
+                font-size: 12px;
+                color: #333;
+                margin-top: 4px;
+            }
+
+            .invoice-title {
+                text-align: right;
+            }
+
+                .invoice-title h1 {
+                    font-size: 22px;
+                    text-transform: uppercase;
+                    font-weight: bold;
+                }
+
+                .invoice-title .so-dh {
+                    font-size: 16px;
+                    color: #333;
+                    margin-top: 4px;
+                }
+
+            .info-section {
+                display: flex;
+                gap: 30px;
+                margin-bottom: 20px;
+            }
+
+            .info-block {
+                flex: 1;
+            }
+
+                .info-block h3 {
+                    font-size: 11px;
+                    text-transform: uppercase;
+                    color: #666;
+                    border-bottom: 1px solid #ccc;
+                    padding-bottom: 4px;
+                    margin-bottom: 8px;
+                }
+
+            .info-row {
+                display: flex;
+                margin-bottom: 4px;
+            }
+
+            .info-label {
+                width: 110px;
+                font-weight: bold;
+                flex-shrink: 0;
+            }
+
+            .info-value {
+                flex: 1;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 15px;
+            }
+
+            thead th {
+                background: #1e3a5f;
+                color: white;
+                padding: 8px 10px;
+                text-align: left;
+                font-size: 12px;
+            }
+
+                thead th.right {
+                    text-align: right;
+                }
+
+                thead th.center {
+                    text-align: center;
+                }
+
+            tbody td {
+                padding: 7px 10px;
+                border-bottom: 1px solid #e0e0e0;
+                font-size: 12px;
+            }
+
+                tbody td.right {
+                    text-align: right;
+                }
+
+                tbody td.center {
+                    text-align: center;
+                }
+
+            tbody tr:nth-child(even) {
+                background: #f9f9f9;
+            }
+
+            .totals {
+                margin-left: auto;
+                width: 280px;
+            }
+
+            .total-row {
+                display: flex;
+                justify-content: space-between;
+                padding: 5px 0;
+                border-bottom: 1px solid #eee;
+            }
+
+                .total-row.grand {
+                    background: #1e3a5f;
+                    color: white;
+                    padding: 10px;
+                    margin-top: 5px;
+                    font-size: 16px;
+                    font-weight: bold;
+                }
+
+            .footer {
+                margin-top: 30px;
+                display: flex;
+                justify-content: space-between;
+            }
+
+            .sign-block {
+                text-align: center;
+                width: 200px;
+            }
+
+                .sign-block .title {
+                    font-weight: bold;
+                    margin-bottom: 60px;
+                }
+
+                .sign-block .name {
+                    font-style: italic;
+                    font-size: 12px;
+                    color: #666;
+                }
+
+            .note {
+                margin-top: 20px;
+                padding: 10px;
+                border: 1px dashed #ccc;
+                font-size: 12px;
+                color: #555;
+            }
+
+            @@media print {
+                body {
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
+                }
+
+                .no-print {
+                    display: none;
+                }
+            }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <div>
+                <div class="company-name">Cửa hàng Vật liệu Xây dựng Hùng Hải</div>
+                <div class="company-info">Địa chỉ: Thôn Cõi,Xã Tam Dương, Tỉnh Phú Thọ </div>
+                <div class="company-info">ĐT: 0987 839 184 | Email: haml14022005@gmail.com </div>
+            </div>
+            <div class="invoice-title">
+                <h1>Hóa đơn bán hàng</h1>
+                <div class="so-dh">Số: @Model.SoDH</div>
+                <div style="font-size:12px;color:#555;margin-top:4px">Ngày: @Model.NgayBan.ToString("dd/MM/yyyy")</div>
+            </div>
+        </div>
+
+        <!-- THÔNG TIN -->
+        <div class="info-section">
+            <div class="info-block">
+                <h3>Thông tin khách hàng</h3>
+                <div class="info-row"><span class="info-label">Khách hàng:</span><span class="info-value">@(Model.KhachHang?.TenKH ?? "Khách lẻ")</span></div>
+                <div class="info-row"><span class="info-label">Điện thoại:</span><span class="info-value">@(Model.KhachHang?.SoDienThoai ?? "-")</span></div>
+                <div class="info-row"><span class="info-label">Địa chỉ:</span><span class="info-value">@(Model.KhachHang?.DiaChi ?? "-")</span></div>
+            </div>
+            <div class="info-block">
+                <h3>Thông tin đơn hàng</h3>
+                <div class="info-row"><span class="info-label">Ngày bán:</span><span class="info-value">@Model.NgayBan.ToString("dd/MM/yyyy HH:mm")</span></div>
+                <div class="info-row"><span class="info-label">Người bán:</span><span class="info-value">@(Model.NguoiBan ?? "Admin")</span></div>
+                <div class="info-row"><span class="info-label">Trạng thái:</span><span class="info-value">@Model.TrangThai</span></div>
+            </div>
+        </div>
+
+        <!-- BẢNG VẬT TƯ -->
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:35px" class="center">STT</th>
+                    <th>Tên vật tư</th>
+                    <th style="width:60px" class="center">ĐVT</th>
+                    <th style="width:70px" class="center">Số lượng</th>
+                    <th style="width:110px" class="right">Đơn giá</th>
+                    <th style="width:120px" class="right">Thành tiền</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    int idx = 1;
+                }
+                @foreach (var ct in Model.ChiTietDonHang ?? new List<VLXDManager.Models.ChiTietDonHang>())
+                {
+                    <tr>
+                        <td class="center">@idx</td>
+                        <td>@ct.VatTu?.TenVatTu</td>
+                        <td class="center">@ct.VatTu?.DonVi</td>
+                        <td class="center">@ct.SoLuong</td>
+                        <td class="right">@ct.DonGia.ToString("N0")</td>
+                        <td class="right">@ct.ThanhTien.ToString("N0")</td>
+                    </tr>
+                    idx++;
+                }
+            </tbody>
+        </table>
+
+        <!-- TỔNG TIỀN -->
+        <div class="totals">
+            <div class="total-row">
+                <span>Tổng tiền hàng:</span>
+                <span>@Model.TongTien.ToString("N0")đ</span>
+            </div>
+            @if (Model.ChietKhau > 0)
+            {
+                <div class="total-row">
+                    <span>Chiết khấu:</span>
+                    <span>-@Model.ChietKhau.ToString("N0")đ</span>
+                </div>
+            }
+            <div class="total-row grand">
+                <span>THÀNH TIỀN:</span>
+                <span>@Model.ThanhTien.ToString("N0")đ</span>
+            </div>
+            <div class="total-row">
+                <span>Đã thanh toán:</span>
+                <span>@Model.DaThanhToan.ToString("N0")đ</span>
+            </div>
+            @if (Model.ConLai > 0)
+            {
+                <div class="total-row" style="color:red;font-weight:bold">
+                    <span>Còn lại:</span>
+                    <span>@Model.ConLai.ToString("N0")đ</span>
+                </div>
+            }
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.GhiChu))
+        {
+            <div class="note"><strong>Ghi chú:</strong> @Model.GhiChu</div>
+        }
+
+        <!-- CHỮ KÝ -->
+        <div class="footer">
+            <div class="sign-block">
+                <div class="title">Khách hàng</div>
+                <div class="name">@(Model.KhachHang?.TenKH ?? "")</div>
+            </div>
+            <div class="sign-block">
+                <div class="title">Người bán</div>
+                <div class="name">@(Model.NguoiBan ?? "Admin")</div>
+            </div>
+        </div>
+
+        <div style="text-align:center;margin-top:20px;font-size:11px;color:#999">
+            Cảm ơn quý khách đã mua hàng! — In lúc @DateTime.Now.ToString("HH:mm dd/MM/yyyy")
+        </div>
+    </div>
+
+    <div style="text-align:center;margin-top:20px" class="no-print">
+        <button onclick="window.print()" style="padding:10px 30px;background:#1e40af;color:white;border:none;border-radius:6px;cursor:pointer;font-size:14px">
+            🖨️ In ngay
+        </button>
+        <button onclick="window.close()" style="padding:10px 30px;background:#64748b;color:white;border:none;border-radius:6px;cursor:pointer;font-size:14px;margin-left:10px">
+            ✕ Đóng
+        </button>
+    </div>
+</body>
+</html>

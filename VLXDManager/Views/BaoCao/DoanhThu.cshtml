@@ -1,0 +1,229 @@
+﻿@model List<VLXDManager.Models.DoanhThuThang>
+@{
+    ViewData["Title"] = "Báo cáo Doanh thu";
+    int nam = ViewBag.Nam ?? DateTime.Now.Year;
+    int thangTu = ViewBag.ThangTu ?? 1;
+    int thangDen = ViewBag.ThangDen ?? 12;
+    decimal tongDoanhThu = Model.Sum(x => x.DoanhThu);
+    decimal tongDaThu = Model.Sum(x => x.DaThu);
+    decimal tongChuaThu = Model.Sum(x => x.ChuaThu);
+    int tongDon = Model.Sum(x => x.SoDonHang);
+}
+
+@section Breadcrumb {
+    <li class="breadcrumb-item">Báo cáo</li>
+    <li class="breadcrumb-item active">Doanh thu</li>
+}
+
+<div class="page-header">
+    <div class="page-title"><i class="fas fa-chart-bar text-primary me-2"></i>Báo cáo Doanh thu</div>
+    <a href="javascript:window.print()" class="btn btn-outline no-print">
+        <i class="fas fa-print"></i> In báo cáo
+    </a>
+</div>
+
+<!-- BỘ LỌC -->
+<div class="search-bar no-print">
+    <form method="get">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label">Năm</label>
+                <select name="nam" class="form-select">
+                    @for (int y = DateTime.Now.Year; y >= DateTime.Now.Year - 4; y--)
+                    {
+                        if (y == nam)
+                        {
+                            <option value="@y" selected>Năm @y</option>
+                        }
+                        else
+                        {
+                            <option value="@y">Năm @y</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Từ tháng</label>
+                <select name="thangTu" class="form-select">
+                    @for (int m = 1; m <= 12; m++)
+                    {
+                        if (m == thangTu)
+                        {
+                            <option value="@m" selected>Tháng @m</option>
+                        }
+                        else
+                        {
+                            <option value="@m">Tháng @m</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Đến tháng</label>
+                <select name="thangDen" class="form-select">
+                    @for (int m = 1; m <= 12; m++)
+                    {
+                        if (m == thangDen)
+                        {
+                            <option value="@m" selected>Tháng @m</option>
+                        }
+                        else
+                        {
+                            <option value="@m">Tháng @m</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100"><i class="fas fa-search"></i> Xem báo cáo</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- TỔNG KẾT -->
+<div class="stats-grid mb-4">
+    <div class="stat-card amber">
+        <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+        <div>
+            <div class="stat-value" style="font-size:18px">@tongDoanhThu.ToString("N0")đ</div>
+            <div class="stat-label">Tổng doanh thu</div>
+        </div>
+    </div>
+    <div class="stat-card green">
+        <div class="stat-icon"><i class="fas fa-circle-check"></i></div>
+        <div>
+            <div class="stat-value" style="font-size:18px">@tongDaThu.ToString("N0")đ</div>
+            <div class="stat-label">Đã thu được</div>
+        </div>
+    </div>
+    <div class="stat-card red">
+        <div class="stat-icon"><i class="fas fa-clock"></i></div>
+        <div>
+            <div class="stat-value" style="font-size:18px">@tongChuaThu.ToString("N0")đ</div>
+            <div class="stat-label">Chưa thu</div>
+        </div>
+    </div>
+    <div class="stat-card blue">
+        <div class="stat-icon"><i class="fas fa-file-invoice"></i></div>
+        <div>
+            <div class="stat-value">@tongDon.ToString("N0")</div>
+            <div class="stat-label">Tổng đơn hàng</div>
+        </div>
+    </div>
+</div>
+
+<!-- BIỂU ĐỒ -->
+<div class="card mb-4">
+    <div class="card-header">
+        <div class="card-title"><i class="fas fa-chart-bar"></i> Biểu đồ doanh thu năm @nam</div>
+    </div>
+    <div class="card-body">
+        <div class="chart-container" style="height:320px">
+            <canvas id="chartDoanhThu"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- BẢNG SỐ LIỆU -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title"><i class="fas fa-table"></i> Chi tiết theo tháng</div>
+    </div>
+    <div class="card-body p-0">
+        <table class="table-vlxd">
+            <thead>
+                <tr>
+                    <th class="text-center">Tháng</th>
+                    <th class="text-center">Số đơn hàng</th>
+                    <th class="text-end">Doanh thu</th>
+                    <th class="text-end">Đã thu</th>
+                    <th class="text-end">Chưa thu</th>
+                    <th class="text-center">Tỷ lệ thu</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in Model)
+                {
+                    var tyLe = row.DoanhThu > 0 ? row.DaThu / row.DoanhThu * 100 : 0;
+                    var isCurrentMonth = row.Thang == DateTime.Now.Month && nam == DateTime.Now.Year;
+                    <tr style="@(isCurrentMonth ? "background:#eff6ff" : "")">
+                        <td class="text-center fw-600">
+                            Tháng @row.Thang
+                            @if (isCurrentMonth) { <span class="badge bg-primary ms-1" style="font-size:10px">Hiện tại</span> }
+                        </td>
+                        <td class="text-center">
+                            @if (row.SoDonHang > 0)
+                            {
+                                <span class="fw-600">@row.SoDonHang</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">-</span>
+                            }
+                        </td>
+                        <td class="text-end fw-600 @(row.DoanhThu > 0 ? "text-primary" : "text-muted")">
+                            @(row.DoanhThu > 0 ? row.DoanhThu.ToString("N0") + "đ" : "-")
+                        </td>
+                        <td class="text-end text-success">
+                            @(row.DaThu > 0 ? row.DaThu.ToString("N0") + "đ" : "-")
+                        </td>
+                        <td class="text-end @(row.ChuaThu > 0 ? "text-danger fw-600" : "text-muted")">
+                            @(row.ChuaThu > 0 ? row.ChuaThu.ToString("N0") + "đ" : "-")
+                        </td>
+                        <td class="text-center" style="width:150px">
+                            @if (row.DoanhThu > 0)
+                            {
+                                <div class="d-flex align-items-center gap-2">
+                                    <div style="flex:1;height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden">
+                                        <div style="height:100%;width:@tyLe%;background:#10b981;border-radius:4px"></div>
+                                    </div>
+                                    <small class="fw-600">@tyLe.ToString("N0")%</small>
+                                </div>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot style="background:#f8fafc">
+                <tr>
+                    <td class="fw-700 px-4 py-3">Tổng cộng</td>
+                    <td class="text-center fw-700">@tongDon</td>
+                    <td class="text-end fw-700 text-primary">@tongDoanhThu.ToString("N0")đ</td>
+                    <td class="text-end fw-700 text-success">@tongDaThu.ToString("N0")đ</td>
+                    <td class="text-end fw-700 text-danger">@tongChuaThu.ToString("N0")đ</td>
+                    <td class="text-center fw-700">
+                        @(tongDoanhThu > 0 ? (tongDaThu / tongDoanhThu * 100).ToString("N1") + "%" : "-")
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const labels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Select(x => "T" + x.Thang)));
+        const dtData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Select(x => x.DoanhThu)));
+        const daThu  = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Select(x => x.DaThu)));
+
+        new Chart(document.getElementById('chartDoanhThu'), {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [
+                    { label: 'Doanh thu', data: dtData, backgroundColor: 'rgba(30,64,175,0.8)', borderRadius: 5 },
+                    { label: 'Đã thu',    data: daThu,  backgroundColor: 'rgba(16,185,129,0.8)', borderRadius: 5 }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + new Intl.NumberFormat('vi-VN').format(ctx.parsed.y) + 'đ' } } },
+                scales: {
+                    y: { ticks: { callback: v => new Intl.NumberFormat('vi-VN', {notation:'compact'}).format(v) + 'đ' }, grid: { color: '#f1f5f9' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    </script>
+}

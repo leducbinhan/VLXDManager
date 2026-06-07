@@ -1,0 +1,218 @@
+﻿@model VLXDManager.Models.DonHang
+@{
+    ViewData["Title"] = "Chi tiết Đơn hàng " + Model.SoDH;
+    var badge = Model.TrangThai switch
+    {
+        "Đã giao" => "badge-giao",
+        "Đã xác nhận" => "badge-xacnhan",
+        "Đã hủy" => "badge-huy",
+        _ => "badge-moi"
+    };
+}
+
+@section Breadcrumb {
+    <li class="breadcrumb-item"><a asp-action="Index">Đơn hàng</a></li>
+    <li class="breadcrumb-item active">@Model.SoDH</li>
+}
+
+<div class="page-header">
+    <div class="page-title">
+        <i class="fas fa-file-invoice text-primary me-2"></i>Đơn hàng @Model.SoDH
+        <small>@Model.NgayBan.ToString("HH:mm dd/MM/yyyy")</small>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="In" asp-route-id="@Model.MaDH" target="_blank" class="btn btn-outline">
+            <i class="fas fa-print"></i> In đơn
+        </a>
+        <a asp-action="Index" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Quay lại</a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- CHI TIẾT ĐƠN HÀNG -->
+    <div class="col-md-8">
+        <!-- THÔNG TIN CHUNG -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <div class="card-title"><i class="fas fa-info-circle"></i> Thông tin đơn hàng</div>
+                <span class="badge-status @badge">@Model.TrangThai</span>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="text-muted small">Khách hàng</div>
+                        <div class="fw-600">@(Model.KhachHang?.TenKH ?? "Khách lẻ")</div>
+                        @if (Model.KhachHang != null)
+                        {
+                            <div class="text-muted small">@Model.KhachHang.SoDienThoai | @Model.KhachHang.DiaChi</div>
+                        }
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-muted small">Ngày bán</div>
+                        <div class="fw-600">@Model.NgayBan.ToString("dd/MM/yyyy")</div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-muted small">Người bán</div>
+                        <div class="fw-600">@(Model.NguoiBan ?? "Admin")</div>
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.GhiChu))
+                    {
+                        <div class="col-12">
+                            <div class="p-3 bg-light rounded small">
+                                <i class="fas fa-note-sticky text-warning me-1"></i> @Model.GhiChu
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- DANH SÁCH VẬT TƯ -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <div class="card-title"><i class="fas fa-list"></i> Danh sách vật tư</div>
+                <span class="badge bg-secondary">@(Model.ChiTietDonHang?.Count ?? 0) mặt hàng</span>
+            </div>
+            <div class="card-body p-0">
+                <table class="table-vlxd">
+                    <thead>
+                        <tr>
+                            <th style="width:40px">#</th>
+                            <th>Tên vật tư</th>
+                            <th class="text-center">Số lượng</th>
+                            <th class="text-center">ĐVT</th>
+                            <th class="text-end">Đơn giá</th>
+                            <th class="text-end">Thành tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            int i = 1;
+                        }
+                        @foreach (var ct in Model.ChiTietDonHang ?? new List<VLXDManager.Models.ChiTietDonHang>())
+                        {
+                            <tr>
+                                <td class="text-muted">@i</td>
+                                <td>
+                                    <div class="fw-600">@ct.VatTu?.TenVatTu</div>
+                                    <div class="text-muted small">@ct.VatTu?.MaHang</div>
+                                </td>
+                                <td class="text-center fw-600">@ct.SoLuong.ToString("N0")</td>
+                                <td class="text-center text-muted">@ct.VatTu?.DonVi</td>
+                                <td class="text-end">@ct.DonGia.ToString("N0")đ</td>
+                                <td class="text-end fw-700 text-primary">@ct.ThanhTien.ToString("N0")đ</td>
+                            </tr>
+                            i++;
+                        }
+                    </tbody>
+                    <tfoot style="background:#f8fafc">
+                        <tr>
+                            <td colspan="5" class="text-end fw-600 px-4 py-3">Tổng tiền hàng:</td>
+                            <td class="text-end fw-700 px-4">@Model.TongTien.ToString("N0")đ</td>
+                        </tr>
+                        @if (Model.ChietKhau > 0)
+                        {
+                            <tr>
+                                <td colspan="5" class="text-end text-success px-4 py-2">Chiết khấu:</td>
+                                <td class="text-end text-success px-4">-@Model.ChietKhau.ToString("N0")đ</td>
+                            </tr>
+                        }
+                        <tr style="background:#eff6ff">
+                            <td colspan="5" class="text-end fw-700 px-4 py-3" style="font-size:16px">THÀNH TIỀN:</td>
+                            <td class="text-end fw-800 px-4 text-primary" style="font-size:16px">@Model.ThanhTien.ToString("N0")đ</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- PHẢI: THANH TOÁN + TRẠNG THÁI -->
+    <div class="col-md-4">
+        <!-- THANH TOÁN -->
+        <div class="card mb-3">
+            <div class="card-header"><div class="card-title"><i class="fas fa-wallet"></i> Thanh toán</div></div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between py-2 border-bottom">
+                    <span class="text-muted">Tổng tiền</span>
+                    <span class="fw-600">@Model.ThanhTien.ToString("N0")đ</span>
+                </div>
+                <div class="d-flex justify-content-between py-2 border-bottom">
+                    <span class="text-muted">Đã thanh toán</span>
+                    <span class="fw-600 text-success">@Model.DaThanhToan.ToString("N0")đ</span>
+                </div>
+                <div class="d-flex justify-content-between py-2 mb-3">
+                    <span class="fw-700 text-danger">Còn lại</span>
+                    <span class="fw-800 text-danger" style="font-size:18px">@Model.ConLai.ToString("N0")đ</span>
+                </div>
+
+                @if (Model.ConLai > 0 && Model.TrangThai != "Đã hủy")
+                {
+                    <form asp-action="ThanhToan" asp-route-id="@Model.MaDH" method="post">
+                        @Html.AntiForgeryToken()
+                        <div class="mb-2">
+                            <label class="form-label fw-600 small">Ghi nhận thanh toán thêm (đ)</label>
+                            <input name="soTienThem" type="number" class="form-control text-end"
+                                   min="1" max="@Model.ConLai" value="@Model.ConLai" placeholder="Nhập số tiền..." />
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="fas fa-money-bill-wave"></i> Ghi nhận thanh toán
+                        </button>
+                    </form>
+                }
+                else if (Model.ConLai == 0)
+                {
+                    <div class="text-center py-2">
+                        <i class="fas fa-circle-check text-success fa-2x"></i>
+                        <div class="text-success fw-600 mt-1">Đã thanh toán đủ</div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- CẬP NHẬT TRẠNG THÁI -->
+        @if (Model.TrangThai != "Đã hủy")
+        {
+            <div class="card mb-3">
+                <div class="card-header"><div class="card-title"><i class="fas fa-arrows-rotate"></i> Cập nhật trạng thái</div></div>
+                <div class="card-body d-flex flex-column gap-2">
+                    @if (Model.TrangThai == "Mới tạo")
+                    {
+                        <form asp-action="CapNhatTrangThai" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.MaDH" />
+                            <input type="hidden" name="trangThai" value="Đã xác nhận" />
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-check"></i> Xác nhận đơn hàng
+                            </button>
+                        </form>
+                    }
+                    @if (Model.TrangThai == "Đã xác nhận")
+                    {
+                        <form asp-action="CapNhatTrangThai" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.MaDH" />
+                            <input type="hidden" name="trangThai" value="Đã giao" />
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="fas fa-truck"></i> Đánh dấu đã giao
+                            </button>
+                        </form>
+                    }
+                    <form asp-action="CapNhatTrangThai" method="post"
+                          onsubmit="return confirm('Hủy đơn hàng sẽ hoàn lại tồn kho. Xác nhận?')">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@Model.MaDH" />
+                        <input type="hidden" name="trangThai" value="Đã hủy" />
+                        <button type="submit" class="btn btn-danger w-100">
+                            <i class="fas fa-ban"></i> Hủy đơn hàng
+                        </button>
+                    </form>
+                </div>
+            </div>
+        }
+
+        <a asp-action="In" asp-route-id="@Model.MaDH" target="_blank" class="btn btn-outline w-100 mb-2">
+            <i class="fas fa-print"></i> In đơn hàng
+        </a>
+    </div>
+</div>

@@ -1,0 +1,179 @@
+﻿@model VLXDManager.Models.KhachHang
+@{
+    ViewData["Title"] = "Chi tiết Khách hàng";
+    var donHang = ViewBag.DonHang as List<VLXDManager.Models.DonHang> ?? new();
+    decimal tongDoanhThu = ViewBag.TongDoanhThu ?? 0;
+}
+
+@section Breadcrumb {
+    <li class="breadcrumb-item"><a asp-action="Index">Khách hàng</a></li>
+    <li class="breadcrumb-item active">@Model.TenKH</li>
+}
+
+<div class="page-header">
+    <div class="page-title">
+        <i class="fas fa-user text-primary me-2"></i>@Model.TenKH
+        <small>Mã: @Model.MaKHCode</small>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="Edit" asp-route-id="@Model.MaKH" class="btn btn-warning">
+            <i class="fas fa-pen"></i> Chỉnh sửa
+        </a>
+        <a asp-action="Index" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Quay lại</a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- THÔNG TIN -->
+    <div class="col-md-4">
+        <div class="card mb-3">
+            <div class="card-header"><div class="card-title"><i class="fas fa-id-card"></i> Thông tin cá nhân</div></div>
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <div style="width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,#1e40af,#3b82f6);
+                        display:flex;align-items:center;justify-content:center;margin:0 auto;font-size:28px;color:white;font-weight:700">
+                        @Model.TenKH[0]
+                    </div>
+                    <div class="fw-700 mt-2">@Model.TenKH</div>
+                    <code class="text-primary">@Model.MaKHCode</code>
+                </div>
+                <div class="d-flex flex-column gap-2">
+                    @if (!string.IsNullOrEmpty(Model.SoDienThoai))
+                    {
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fas fa-phone text-success" style="width:18px"></i>
+                            <a href="tel:@Model.SoDienThoai" class="text-dark text-decoration-none">@Model.SoDienThoai</a>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Email))
+                    {
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fas fa-envelope text-primary" style="width:18px"></i>
+                            <a href="mailto:@Model.Email" class="text-dark text-decoration-none small">@Model.Email</a>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.DiaChi))
+                    {
+                        <div class="d-flex align-items-start gap-2">
+                            <i class="fas fa-location-dot text-danger mt-1" style="width:18px"></i>
+                            <span class="small">@Model.DiaChi</span>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.GhiChu))
+                    {
+                        <div class="d-flex align-items-start gap-2">
+                            <i class="fas fa-note-sticky text-warning mt-1" style="width:18px"></i>
+                            <span class="small text-muted">@Model.GhiChu</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- THỐNG KÊ -->
+        <div class="card mb-3">
+            <div class="card-header"><div class="card-title"><i class="fas fa-chart-bar"></i> Thống kê mua hàng</div></div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between py-2 border-bottom">
+                    <span class="text-muted">Tổng đơn hàng</span>
+                    <span class="fw-700">@donHang.Count</span>
+                </div>
+                <div class="d-flex justify-content-between py-2 border-bottom">
+                    <span class="text-muted">Tổng doanh thu</span>
+                    <span class="fw-700 text-primary">@tongDoanhThu.ToString("N0")đ</span>
+                </div>
+                <div class="d-flex justify-content-between py-2 border-bottom">
+                    <span class="text-muted">Đã thanh toán</span>
+                    <span class="fw-700 text-success">@donHang.Sum(d => d.DaThanhToan).ToString("N0")đ</span>
+                </div>
+                <div class="d-flex justify-content-between py-2">
+                    <span class="text-muted">Còn nợ</span>
+                    <span class="fw-700 text-danger">@donHang.Sum(d => d.ConLai).ToString("N0")đ</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex flex-column gap-2">
+            <a asp-controller="DonHang" asp-action="Create" class="btn btn-primary w-100">
+                <i class="fas fa-plus"></i> Tạo đơn hàng mới
+            </a>
+            <a asp-action="Edit" asp-route-id="@Model.MaKH" class="btn btn-outline w-100">
+                <i class="fas fa-pen"></i> Chỉnh sửa thông tin
+            </a>
+        </div>
+    </div>
+
+    <!-- LỊCH SỬ ĐƠN HÀNG -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title"><i class="fas fa-history"></i> Lịch sử đơn hàng</div>
+                <span class="badge bg-primary">@donHang.Count đơn</span>
+            </div>
+            <div class="card-body p-0">
+                @if (!donHang.Any())
+                {
+                    <div class="text-center py-5 text-muted">
+                        <i class="fas fa-inbox fa-3x mb-3 d-block opacity-25"></i>
+                        Khách hàng chưa có đơn hàng nào
+                    </div>
+                }
+                else
+                {
+                    <table class="table-vlxd">
+                        <thead>
+                            <tr>
+                                <th>Số ĐH</th>
+                                <th>Ngày bán</th>
+                                <th class="text-end">Thành tiền</th>
+                                <th class="text-end">Đã TT</th>
+                                <th class="text-end">Còn lại</th>
+                                <th class="text-center">Trạng thái</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var dh in donHang)
+                            {
+                                var badge = dh.TrangThai switch
+                                {
+                                    "Đã giao" => "badge-giao",
+                                    "Đã xác nhận" => "badge-xacnhan",
+                                    "Đã hủy" => "badge-huy",
+                                    _ => "badge-moi"
+                                };
+                                <tr>
+                                    <td><span class="fw-700 text-primary">@dh.SoDH</span></td>
+                                    <td class="text-muted small">@dh.NgayBan.ToString("dd/MM/yyyy")</td>
+                                    <td class="text-end fw-600">@dh.ThanhTien.ToString("N0")đ</td>
+                                    <td class="text-end text-success">@dh.DaThanhToan.ToString("N0")đ</td>
+                                    <td class="text-end @(dh.ConLai > 0 ? "text-danger fw-600" : "text-muted")">
+                                        @dh.ConLai.ToString("N0")đ
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge-status @badge">@dh.TrangThai</span>
+                                    </td>
+                                    <td>
+                                        <a asp-controller="DonHang" asp-action="Details" asp-route-id="@dh.MaDH"
+                                           class="btn btn-outline btn-icon">
+                                            <i class="fas fa-eye text-primary"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot style="background:#f8fafc">
+                            <tr>
+                                <td colspan="2" class="fw-700 px-4 py-3">Tổng cộng</td>
+                                <td class="text-end fw-700 px-4">@donHang.Sum(d => d.ThanhTien).ToString("N0")đ</td>
+                                <td class="text-end text-success fw-700 px-4">@donHang.Sum(d => d.DaThanhToan).ToString("N0")đ</td>
+                                <td class="text-end text-danger fw-700 px-4">@donHang.Sum(d => d.ConLai).ToString("N0")đ</td>
+                                <td colspan="2"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                }
+            </div>
+        </div>
+    </div>
+</div>

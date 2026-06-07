@@ -1,0 +1,153 @@
+﻿@model List<VLXDManager.Models.VatTu>
+@{
+    ViewData["Title"] = "Báo cáo Tồn kho";
+    var danhMucLoais = ViewBag.DanhMucLoais as List<VLXDManager.Models.DanhMucLoai> ?? new();
+    int? maLoai = ViewBag.MaLoai;
+    decimal tongGiaTri = ViewBag.TongGiaTri ?? 0;
+    int sapHet = ViewBag.SapHet ?? 0;
+}
+
+@section Breadcrumb {
+    <li class="breadcrumb-item">Báo cáo</li>
+    <li class="breadcrumb-item active">Tồn kho</li>
+}
+
+<div class="page-header">
+    <div class="page-title"><i class="fas fa-warehouse text-primary me-2"></i>Báo cáo Tồn kho</div>
+    <a href="javascript:window.print()" class="btn btn-outline no-print">
+        <i class="fas fa-print"></i> In báo cáo
+    </a>
+</div>
+
+<!-- THỐNG KÊ TỔNG QUAN -->
+<div class="stats-grid mb-4">
+    <div class="stat-card blue">
+        <div class="stat-icon"><i class="fas fa-boxes-stacked"></i></div>
+        <div>
+            <div class="stat-value">@Model.Count</div>
+            <div class="stat-label">Tổng loại vật tư</div>
+        </div>
+    </div>
+    <div class="stat-card amber">
+        <div class="stat-icon"><i class="fas fa-coins"></i></div>
+        <div>
+            <div class="stat-value" style="font-size:17px">@tongGiaTri.ToString("N0")đ</div>
+            <div class="stat-label">Tổng giá trị tồn kho</div>
+        </div>
+    </div>
+    <div class="stat-card red">
+        <div class="stat-icon"><i class="fas fa-triangle-exclamation"></i></div>
+        <div>
+            <div class="stat-value">@sapHet</div>
+            <div class="stat-label">Loại sắp hết hàng</div>
+        </div>
+    </div>
+    <div class="stat-card green">
+        <div class="stat-icon"><i class="fas fa-circle-check"></i></div>
+        <div>
+            <div class="stat-value">@(Model.Count - sapHet)</div>
+            <div class="stat-label">Loại còn đủ hàng</div>
+        </div>
+    </div>
+</div>
+
+<!-- BỘ LỌC -->
+<div class="search-bar no-print">
+    <form method="get">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label">Lọc theo loại vật tư</label>
+                <select name="maLoai" class="form-select">
+                    <option value="">-- Tất cả loại --</option>
+
+                    @foreach (var loai in danhMucLoais)
+                    {
+                        if (maLoai == loai.MaLoai)
+                        {
+                            <option value="@loai.MaLoai" selected>
+                                @loai.TenLoai
+                            </option>
+                        }
+                        else
+                        {
+                            <option value="@loai.MaLoai">
+                                @loai.TenLoai
+                            </option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100"><i class="fas fa-filter"></i> Lọc</button>
+            </div>
+            <div class="col-md-2">
+                <a asp-action="TonKho" class="btn btn-outline w-100"><i class="fas fa-rotate-right"></i> Tất cả</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- BẢNG TỒN KHO -->
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table-vlxd">
+            <thead>
+                <tr>
+                    <th>Mã hàng</th>
+                    <th>Tên vật tư</th>
+                    <th>Loại</th>
+                    <th class="text-center">Tồn kho</th>
+                    <th class="text-center">Tồn min</th>
+                    <th class="text-end">Giá nhập</th>
+                    <th class="text-end">Giá trị tồn</th>
+                    <th class="text-center">Tình trạng</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var vt in Model)
+                {
+                    var isLow = vt.SoLuongTon <= vt.SoLuongMin;
+                    var isEmpty = vt.SoLuongTon == 0;
+                    <tr style="@(isEmpty ? "background:#fef2f2" : isLow ? "background:#fff7ed" : "")">
+                        <td><code class="text-primary">@vt.MaHang</code></td>
+                        <td>
+                            <div class="fw-600">@vt.TenVatTu</div>
+                            <div class="text-muted small">@vt.NhaCungCap</div>
+                        </td>
+                        <td><span class="badge bg-light text-dark border">@vt.DanhMucLoai?.TenLoai</span></td>
+                        <td class="text-center">
+                            <span class="fw-700 @(isEmpty ? "text-danger" : isLow ? "text-warning" : "text-success")">
+                                @vt.SoLuongTon
+                            </span>
+                            <span class="text-muted small"> @vt.DonVi</span>
+                        </td>
+                        <td class="text-center text-muted">@vt.SoLuongMin @vt.DonVi</td>
+                        <td class="text-end">@vt.GiaNhap.ToString("N0")đ</td>
+                        <td class="text-end fw-600">@((vt.SoLuongTon * vt.GiaNhap).ToString("N0"))đ</td>
+                        <td class="text-center">
+                            @if (isEmpty)
+                            {
+                                <span class="badge-status badge-huy"><i class="fas fa-times-circle"></i> Hết hàng</span>
+                            }
+                            else if (isLow)
+                            {
+                                <span class="badge-status badge-saphet"><i class="fas fa-triangle-exclamation"></i> Sắp hết</span>
+                            }
+                            else
+                            {
+                                <span class="badge-status badge-giao"><i class="fas fa-check"></i> Đủ hàng</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot style="background:#f8fafc">
+                <tr>
+                    <td colspan="6" class="fw-700 px-4 py-3">Tổng giá trị tồn kho</td>
+                    <td class="text-end fw-800 px-4 text-primary" style="font-size:15px">@tongGiaTri.ToString("N0")đ</td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>

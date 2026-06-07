@@ -1,0 +1,132 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - VLXD Manager</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    <div class="wrapper">
+        <!-- SIDEBAR -->
+        <nav id="sidebar" class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-logo">
+                    <i class="fas fa-hard-hat"></i>
+                </div>
+                <div class="brand-text">
+                    <span class="brand-title">VLXD HÙNG HẢI</span>
+                    <span class="brand-sub">Uy tín tạo niềm tin</span>
+                </div>
+            </div>
+
+            <div class="sidebar-menu">
+                <div class="menu-label">TỔNG QUAN</div>
+                <a asp-controller="Home" asp-action="Index" class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")">
+                    <i class="fas fa-chart-pie"></i>
+                    <span>Trang Chủ</span>
+                </a>
+
+                <div class="menu-label">QUẢN LÝ</div>
+                <a asp-controller="VatTu" asp-action="Index" class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "VatTu" ? "active" : "")">
+                    <i class="fas fa-boxes-stacked"></i>
+                    <span>Vật tư & Kho</span>
+                </a>
+                <a asp-controller="DonHang" asp-action="Index" class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "DonHang" ? "active" : "")">
+                    <i class="fas fa-file-invoice"></i>
+                    <span>Đơn hàng bán</span>
+                </a>
+                <a asp-controller="KhachHang" asp-action="Index" class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "KhachHang" ? "active" : "")">
+                    <i class="fas fa-users"></i>
+                    <span>Khách hàng</span>
+                </a>
+
+                <div class="menu-label">BÁO CÁO</div>
+                <a asp-controller="BaoCao" asp-action="DoanhThu" class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "BaoCao" && ViewContext.RouteData.Values["action"]?.ToString() == "DoanhThu" ? "active" : "")">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Doanh thu</span>
+                </a>
+                <a asp-controller="BaoCao" asp-action="TonKho" class="menu-item @(ViewContext.RouteData.Values["action"]?.ToString() == "TonKho" ? "active" : "")">
+                    <i class="fas fa-warehouse"></i>
+                    <span>Tồn kho</span>
+                </a>
+                <a asp-controller="BaoCao" asp-action="BanChay" class="menu-item @(ViewContext.RouteData.Values["action"]?.ToString() == "BanChay" ? "active" : "")">
+                    <i class="fas fa-fire"></i>
+                    <span>Hàng bán chạy</span>
+                </a>
+                <a asp-controller="BaoCao" asp-action="CongNo" class="menu-item @(ViewContext.RouteData.Values["action"]?.ToString() == "CongNo" ? "active" : "")">
+                    <i class="fas fa-hand-holding-dollar"></i>
+                    <span>Công nợ</span>
+                </a>
+                <a asp-controller="ThanhVien"
+                   asp-action="Index"
+                   class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "ThanhVien" ? "active" : "")">
+                    <i class="fas fa-id-badge"></i>
+                    <span>Thành viên</span>
+                </a>
+            </div>
+            <div class="sb-section">CỬA HÀNG</div>
+           
+
+            <div class="sidebar-footer">
+                <span class="text-muted small"><i class="fas fa-circle text-success me-1"></i>Hệ thống đang hoạt động</span>
+            </div>
+        </nav>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content" id="mainContent">
+            <!-- TOP NAVBAR -->
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button id="sidebarToggle" class="btn-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <nav aria-label="breadcrumb" class="ms-3">
+                        <ol class="breadcrumb mb-0">
+                            @await RenderSectionAsync("Breadcrumb", required: false)
+                        </ol>
+                    </nav>
+                </div>
+                <div class="topbar-right">
+                    <div class="topbar-time" id="clock"></div>
+                    <div class="topbar-user">
+                        <i class="fas fa-user-circle fa-lg text-primary"></i>
+                        <span>Admin</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- ALERTS -->
+            <div class="page-alerts">
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>@Html.Raw(TempData["Success"])
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+                @if (TempData["Error"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>@Html.Raw(TempData["Error"])
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+            </div>
+
+            <!-- PAGE CONTENT -->
+            <main class="page-content">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <script src="~/js/site.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,136 @@
+@model VLXDManager.Models.VatTu
+@{
+    ViewData["Title"] = "Chi tiết Vật tư";
+    var pct = Model.SoLuongMin > 0 ? (double)Model.SoLuongTon / Model.SoLuongMin * 100 : 100;
+    var isLow = Model.SoLuongTon <= Model.SoLuongMin;
+}
+
+@section Breadcrumb {
+    <li class="breadcrumb-item"><a asp-action="Index">Vật tư</a></li>
+    <li class="breadcrumb-item active">@Model.MaHang</li>
+}
+
+<div class="page-header">
+    <div class="page-title">
+        <i class="fas fa-box text-primary me-2"></i>@Model.TenVatTu
+        <small>Mã hàng: @Model.MaHang</small>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="Edit" asp-route-id="@Model.MaVatTu" class="btn btn-warning">
+            <i class="fas fa-pen"></i> Chỉnh sửa
+        </a>
+        <a asp-action="Index" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Quay lại</a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header"><div class="card-title"><i class="fas fa-info-circle"></i> Thông tin vật tư</div></div>
+            <div class="card-body">
+                <div class="row g-0">
+                    <div class="col-6" style="padding:10px 0;border-bottom:1px solid #f1f5f9">
+                        <div class="text-muted small">Mã hàng</div>
+                        <div class="fw-600 text-primary">@Model.MaHang</div>
+                    </div>
+                    <div class="col-6" style="padding:10px 0;border-bottom:1px solid #f1f5f9">
+                        <div class="text-muted small">Loại vật tư</div>
+                        <div class="fw-600 ">@(Model.DanhMucLoai?.TenLoai ?? "-")</div>
+                    </div>
+                    <div class="col-6" style="padding:10px 0;border-bottom:1px solid #f1f5f9">
+                        <div class="text-muted small">Tên vật tư</div>
+                        <div class="fw-600 ">@Model.TenVatTu</div>
+                    </div>
+                    <div class="col-6" style="padding:10px 0;border-bottom:1px solid #f1f5f9">
+                        <div class="text-muted small">Đơn vị tính</div>
+                        <div class="fw-600 ">@Model.DonVi</div>
+                    </div>
+                    <div class="col-6" style="padding:10px 0;border-bottom:1px solid #f1f5f9">
+                        <div class="text-muted small">Giá nhập</div>
+                        <div class="fw-600 ">@(Model.GiaNhap.ToString("N0") + "đ")</div>
+                    </div>
+                    <div class="col-6" style="padding:10px 0;border-bottom:1px solid #f1f5f9">
+                        <div class="text-muted small">Giá bán</div>
+                        <div class="fw-600 text-primary">@(Model.GiaBan.ToString("N0") + "đ")</div>
+                    </div>
+                    <div class="col-6" style="padding:10px 0;border-bottom:1px solid #f1f5f9">
+                        <div class="text-muted small">Nhà cung cấp</div>
+                        <div class="fw-600 ">@(Model.NhaCungCap ?? "-")</div>
+                    </div>
+                    <div class="col-6" style="padding:10px 0;border-bottom:1px solid #f1f5f9">
+                        <div class="text-muted small">Ngày tạo</div>
+                        <div class="fw-600 ">@Model.NgayTao.ToString("dd/MM/yyyy")</div>
+                    </div>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.MoTa))
+                {
+                    <div class="mt-3 p-3 bg-light rounded">
+                        <div class="text-muted small mb-1">Mô tả</div>
+                        <div>@Model.MoTa</div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card mb-3" style="border-left:4px solid @(isLow ? "#ef4444" : "#10b981")">
+            <div class="card-body text-center py-4">
+                <div style="font-size:48px;font-weight:800;color:@(isLow ? "#ef4444" : "#10b981")">
+                    @Model.SoLuongTon
+                </div>
+                <div class="text-muted">@Model.DonVi tồn kho</div>
+                <div class="mt-3">
+                    <div class="@(isLow ? "stock-crit" : "stock-ok")">
+                        <div class="stock-bar">
+                            <div class="stock-fill" style="width:@(Math.Min(100, pct))%"></div>
+                        </div>
+                    </div>
+                    <div class="small text-muted mt-1">Tối thiểu: @Model.SoLuongMin @Model.DonVi</div>
+                </div>
+                @if (isLow)
+                {
+                    <div class="badge-status badge-saphet mt-2">
+                        <i class="fas fa-triangle-exclamation"></i> Cần nhập thêm hàng
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="text-muted small mb-2">Lợi nhuận ước tính / đơn vị</div>
+                <div class="d-flex justify-content-between">
+                    <span>Giá nhập</span><span>@Model.GiaNhap.ToString("N0")đ</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span>Giá bán</span><span class="text-primary">@Model.GiaBan.ToString("N0")đ</span>
+                </div>
+                <hr class="my-2" />
+                <div class="d-flex justify-content-between fw-700">
+                    <span>Lợi nhuận</span>
+                    <span class="text-success">
+                        @((Model.GiaBan - Model.GiaNhap).ToString("N0"))đ
+                        (@(Model.GiaNhap > 0 ? ((Model.GiaBan - Model.GiaNhap) / Model.GiaNhap * 100).ToString("N1") : "0")%)
+                    </span>
+                </div>
+                <hr class="my-2" />
+                <div class="d-flex justify-content-between fw-700">
+                    <span>Giá trị tồn kho</span>
+                    <span class="text-primary">@((Model.SoLuongTon * Model.GiaNhap).ToString("N0"))đ</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body d-flex flex-column gap-2">
+                <a asp-action="Edit" asp-route-id="@Model.MaVatTu" class="btn btn-warning w-100">
+                    <i class="fas fa-pen"></i> Chỉnh sửa
+                </a>
+                <a asp-action="Index" class="btn btn-outline w-100">
+                    <i class="fas fa-arrow-left"></i> Quay lại danh sách
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

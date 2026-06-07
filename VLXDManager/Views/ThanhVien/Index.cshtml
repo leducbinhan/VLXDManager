@@ -1,0 +1,223 @@
+﻿@model List<VLXDManager.Models.ThanhVien>
+@{
+    ViewData["Title"] = "Thành viên cửa hàng";
+    int total   = ViewBag.Total   ?? 0;
+    int page    = ViewBag.Page    ?? 1;
+    int totalPg = ViewBag.TotalPg ?? 1;
+    var dsChucVu = ViewBag.DsChucVu as List<string> ?? new();
+    string? q      = ViewBag.Q;
+    string? chucVu = ViewBag.ChucVu;
+}
+
+@section Breadcrumb {
+    <li class="breadcrumb-item active">Thành viên</li>
+}
+
+<div class="page-header">
+    <div>
+        <div class="page-title">
+            <i class="fas fa-id-badge text-primary me-2"></i>Thành viên cửa hàng
+        </div>
+        <div class="ph-sub">Tổng: @total thành viên đang làm việc</div>
+    </div>
+    <a asp-action="Create" class="btn btn-p">
+        <i class="fas fa-user-plus"></i> Thêm thành viên
+    </a>
+</div>
+
+<!-- TÌM KIẾM -->
+<div class="sbar">
+    <form method="get">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-5">
+                <label class="form-label">Tìm kiếm</label>
+                <div class="fi">
+                    <i class="fas fa-search ic"></i>
+                    <input type="text" name="q" value="@q" class="form-control"
+                           placeholder="Tên, mã TV, số điện thoại...">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Chức vụ</label>
+                <select name="chucVu" class="form-select">
+                    <option value="">-- Tất cả --</option>
+                    @foreach (var cv in dsChucVu)
+                    {
+                        <option value="@cv" selected="@(cv == chucVu)">
+                            @cv
+                        </option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4 d-flex gap-2">
+                <button type="submit" class="btn btn-p flex-fill">
+                    <i class="fas fa-search"></i> Tìm
+                </button>
+                <a asp-action="Index" class="btn btn-o"><i class="fas fa-rotate-right"></i></a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- DANH SÁCH DẠNG CARD -->
+@if (!Model.Any())
+{
+    <div class="card">
+        <div class="cb text-center py-5 text-muted">
+            <i class="fas fa-users fa-3x mb-3 d-block opacity-25"></i>
+            <div>Không tìm thấy thành viên nào</div>
+            <a asp-action="Create" class="btn btn-p mt-3">
+                <i class="fas fa-user-plus"></i> Thêm thành viên đầu tiên
+            </a>
+        </div>
+    </div>
+}
+else
+{
+    <div class="row g-3 mb-3">
+        @foreach (var tv in Model)
+        {
+            @* Màu avatar theo chức vụ *@
+            var (bg, icon) = tv.ChucVu switch {
+                "Quản lý"   => ("#1e40af", "fa-crown"),
+                "Thu ngân"  => ("#059669", "fa-cash-register"),
+                "Thủ kho"   => ("#b45309", "fa-warehouse"),
+                "Giao hàng" => ("#7c3aed", "fa-truck"),
+                _           => ("#0891b2", "fa-user-tie")
+            };
+            var bg20 = bg + "20";
+
+            @* Số năm làm việc *@
+            var namLV = tv.NgayVaoLam.HasValue
+                ? (int)Math.Floor((DateTime.Today - tv.NgayVaoLam.Value).TotalDays / 365)
+                : 0;
+
+            <div class="col-md-6 col-xl-4">
+                <div class="card h-100" style="border-top:3px solid @bg">
+                    <div class="cb">
+                        <!-- HEADER: Avatar + tên -->
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div style="width:52px;height:52px;border-radius:50%;flex-shrink:0;
+                                        background:@bg;display:flex;align-items:center;
+                                        justify-content:center;color:#fff;font-size:20px;
+                                        font-weight:700;box-shadow:0 4px 10px rgba(0,0,0,.15)">
+                                @tv.HoTen[0]
+                            </div>
+                            <div style="flex:1;min-width:0">
+                                <div class="fw-600" style="font-size:15px;
+                                     white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                                    @tv.HoTen
+                                </div>
+                                <div class="d-flex align-items-center gap-2 mt-1">
+                                    <span style="background:@bg20;color:@bg;
+                                                 padding:2px 8px;border-radius:12px;
+                                                 font-size:11.5px;font-weight:600">
+                                        <i class="fas @icon me-1" style="font-size:10px"></i>@(tv.ChucVu ?? "Nhân viên")
+                                    </span>
+                                    <code style="font-size:11px;color:var(--muted)">@tv.MaTVCode</code>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- THÔNG TIN -->
+                        <div class="d-flex flex-column gap-2" style="font-size:13px">
+                            @if (!string.IsNullOrEmpty(tv.SoDienThoai))
+                            {
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fas fa-phone text-success" style="width:16px"></i>
+                                    <a href="tel:@tv.SoDienThoai" class="text-decoration-none text-dark">
+                                        @tv.SoDienThoai
+                                    </a>
+                                </div>
+                            }
+                            @if (!string.IsNullOrEmpty(tv.Email))
+                            {
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fas fa-envelope text-primary" style="width:16px"></i>
+                                    <span class="text-muted" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+                                        @tv.Email
+                                    </span>
+                                </div>
+                            }
+                            @if (tv.NgayVaoLam.HasValue)
+                            {
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fas fa-calendar-check text-warning" style="width:16px"></i>
+                                    <span class="text-muted">
+                                        Vào làm: @tv.NgayVaoLam.Value.ToString("dd/MM/yyyy")
+                                        <span class="ms-1" style="color:@bg;font-weight:600">
+                                            (@namLV năm)
+                                        </span>
+                                    </span>
+                                </div>
+                            }
+                            @if (tv.LuongCoBan > 0)
+                            {
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fas fa-coins text-warning" style="width:16px"></i>
+                                    <span class="fw-600" style="color:@bg">
+                                        @tv.LuongCoBan.ToString("N0")đ/tháng
+                                    </span>
+                                </div>
+                            }
+                        </div>
+
+                        <!-- ACTIONS -->
+                        <div class="d-flex gap-2 mt-3 pt-3"
+                             style="border-top:1px solid var(--border)">
+                            <a asp-action="Details" asp-route-id="@tv.MaTV"
+                               class="btn btn-o btn-sm flex-fill">
+                                <i class="fas fa-eye"></i> Xem
+                            </a>
+                            <a asp-action="Edit" asp-route-id="@tv.MaTV"
+                               class="btn btn-sm flex-fill"
+                               style="background:#fffbeb;color:#b45309;border:1px solid #fde68a">
+                                <i class="fas fa-pen"></i> Sửa
+                            </a>
+                            <form id="del@(tv.MaTV)" asp-action="Delete"
+                                  asp-route-id="@tv.MaTV" method="post" style="display:inline">
+                                @Html.AntiForgeryToken()
+                            </form>
+                            <button type="button" class="btn btn-sm btn-o"
+                                    style="border-color:#fecaca;color:#ef4444"
+                                    onclick="confirmDel('del@(tv.MaTV)','@tv.HoTen.Replace("'","\\'")')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- PHÂN TRANG -->
+    @if (totalPg > 1)
+    {
+        <div class="pag">
+            @if (page > 1)
+            {
+                <a href="?p=@(page-1)&q=@q&chucVu=@chucVu" class="pg">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            }
+            @for (int i = Math.Max(1, page - 2); i <= Math.Min(totalPg, page + 2); i++)
+            {
+                <a href="?p=@i&q=@q&chucVu=@chucVu" class="pg @(i == page ? "on" : "")">@i</a>
+            }
+            @if (page < totalPg)
+            {
+                <a href="?p=@(page+1)&q=@q&chucVu=@chucVu" class="pg">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            }
+        </div>
+    }
+}
+
+@section Scripts {
+<style>
+    @* Màu badge bg nhạt theo chức vụ *@
+    .badge-cv { display:inline-flex;align-items:center;gap:4px;padding:2px 9px;
+                border-radius:12px;font-size:11.5px;font-weight:600 }
+</style>
+}

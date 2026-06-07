@@ -1,0 +1,212 @@
+﻿@model VLXDManager.Models.CreateDonHangViewModel
+@{
+    ViewData["Title"] = "Tạo Đơn hàng mới";
+}
+
+@section Breadcrumb {
+    <li class="breadcrumb-item"><a asp-controller="DonHang" asp-action="Index">Đơn hàng</a></li>
+    <li class="breadcrumb-item active">Tạo mới</li>
+}
+
+<div class="page-header">
+    <div class="page-title"><i class="fas fa-file-invoice text-primary me-2"></i>Tạo Đơn hàng mới</div>
+    <a asp-action="Index" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Quay lại</a>
+</div>
+
+<form asp-action="Create" method="post" id="formDonHang">
+    @Html.AntiForgeryToken()
+    <div class="row g-4">
+        <!-- TRÁI: THÔNG TIN ĐƠN HÀNG -->
+        <div class="col-md-8">
+
+            <!-- THÔNG TIN CƠ BẢN -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <div class="card-title"><i class="fas fa-info-circle"></i> Thông tin đơn hàng</div>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Số đơn hàng</label>
+                            <input asp-for="DonHang.SoDH" class="form-control" readonly style="background:#f8fafc; font-weight:600;" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Ngày bán</label>
+                            <input asp-for="DonHang.NgayBan" type="datetime-local" class="form-control" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Trạng thái</label>
+                            <select asp-for="DonHang.TrangThai" class="form-select">
+                                <option>Mới tạo</option>
+                                <option>Đã xác nhận</option>
+                                <option>Đã giao</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Khách hàng</label>
+                            <select asp-for="DonHang.MaKH" class="form-select">
+                                <option value="">-- Khách lẻ (không lưu) --</option>
+                                @foreach (var kh in Model.KhachHang)
+                                {
+                                    <option value="@kh.MaKH">@kh.TenKH (@kh.SoDienThoai)</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Người bán</label>
+                            <input asp-for="DonHang.NguoiBan" class="form-control" value="Admin" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Ghi chú</label>
+                            <input asp-for="DonHang.GhiChu" class="form-control" placeholder="Ghi chú đơn hàng..." />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- THÊM VẬT TƯ VÀO ĐƠN -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <div class="card-title"><i class="fas fa-cart-plus"></i> Thêm vật tư vào đơn</div>
+                </div>
+                <div class="card-body">
+                    <div class="row g-2 align-items-end">
+                        <div class="col-md-4">
+                            <label class="form-label">Chọn vật tư</label>
+                            <select id="selectVatTu" class="form-select" onchange="onVatTuChange(this)">
+                                <option value="">-- Chọn vật tư --</option>
+                                @foreach (var vt in Model.VatTu)
+                                {
+                                    <option value="@vt.MaVatTu"
+                                            data-ten="@vt.TenVatTu"
+                                            data-donvi="@vt.DonVi"
+                                            data-gia="@vt.GiaBan"
+                                            data-ton="@vt.SoLuongTon">
+                                        @vt.TenVatTu (@vt.SoLuongTon @vt.DonVi)
+                                    </option>
+                                }
+                            </select>
+                            <small id="labelTonKho" class="text-muted"></small>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Số lượng</label>
+                            <input id="inputSoLuong" type="number" class="form-control" min="1" placeholder="0">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Đơn giá (đ)</label>
+                            <input id="inputDonGia" type="number" class="form-control text-end" min="0" placeholder="0">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Ghi chú</label>
+                            <input id="inputGhiChu" type="text" class="form-control" placeholder="...">
+                        </div>
+                        <div class="col-md-1">
+                            <button type="button" class="btn btn-success w-100" onclick="addOrderRow()">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BẢNG CHI TIẾT -->
+                <div class="card-body p-0 border-top">
+                    <table class="table-vlxd">
+                        <thead>
+                            <tr>
+                                <th style="width:40px">#</th>
+                                <th>Tên vật tư</th>
+                                <th style="width:100px" class="text-center">SL</th>
+                                <th style="width:70px">ĐVT</th>
+                                <th style="width:140px" class="text-end">Đơn giá</th>
+                                <th style="width:130px" class="text-end">Thành tiền</th>
+                                <th style="width:50px"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="orderTableBody">
+                            <tr>
+                                <td colspan="7" class="text-center text-muted py-4">
+                                    <i class="fas fa-inbox fa-2x mb-2 d-block opacity-25"></i>Chưa có vật tư nào
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- PHẢI: TỔNG TIỀN + NÚT LƯU -->
+        <div class="col-md-4">
+            <div class="card mb-3 sticky-top" style="top:80px">
+                <div class="card-header">
+                    <div class="card-title"><i class="fas fa-calculator"></i> Tổng kết đơn hàng</div>
+                </div>
+                <div class="card-body">
+                    <!-- Hidden fields -->
+                    <input type="hidden" asp-for="DonHang.TongTien" id="hidTongTien" />
+                    <input type="hidden" asp-for="DonHang.ThanhTien" id="hidThanhTien" />
+                    <input type="hidden" asp-for="DonHang.ConLai" id="hidConLai" />
+
+                    <div class="d-flex justify-content-between py-2 border-bottom">
+                        <span class="text-muted">Tổng tiền hàng:</span>
+                        <span class="fw-600" id="displayTongTien">0</span>
+                    </div>
+
+                    <div class="py-2 border-bottom">
+                        <label class="form-label">Chiết khấu (đ)</label>
+                        <input asp-for="DonHang.ChietKhau" type="number" class="form-control text-end"
+                               id="inputChietKhau" min="0" value="0" onchange="updateOrderTotal()" />
+                    </div>
+
+                    <div class="d-flex justify-content-between py-2 border-bottom">
+                        <span class="fw-600">Thành tiền:</span>
+                        <span class="fw-700 text-primary fs-5" id="displayThanhTien">0</span>
+                    </div>
+
+                    <div class="py-2 border-bottom">
+                        <label class="form-label">Đã thanh toán (đ)</label>
+                        <input asp-for="DonHang.DaThanhToan" type="number" class="form-control text-end"
+                               id="inputDaThanhToan" min="0" value="0" onchange="updateOrderTotal()" />
+                    </div>
+
+                    <div class="d-flex justify-content-between py-2">
+                        <span class="text-danger fw-600">Còn lại:</span>
+                        <span class="fw-700 text-danger fs-5" id="displayConLai">0</span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 mt-3">
+                        <i class="fas fa-save"></i> Lưu đơn hàng
+                    </button>
+                    <a asp-action="Index" class="btn btn-outline w-100 mt-2">
+                        <i class="fas fa-times"></i> Hủy
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        // Khởi tạo bảng
+        initOrderTable();
+
+        // Format số khi nhập đơn giá
+        document.getElementById('selectVatTu')?.addEventListener('change', function () {
+            const opt = this.options[this.selectedIndex];
+            if (opt && opt.dataset.gia) {
+                document.getElementById('inputDonGia').value = opt.dataset.gia;
+                document.getElementById('labelTonKho').textContent = `Tồn: ${opt.dataset.ton} ${opt.dataset.donvi}`;
+            }
+        });
+
+        // Validate trước khi submit
+        document.getElementById('formDonHang').addEventListener('submit', function (e) {
+            if (orderItems.length === 0) {
+                e.preventDefault();
+                alert('Vui lòng thêm ít nhất một vật tư vào đơn hàng!');
+                return;
+            }
+            updateOrderTotal();
+        });
+    </script>
+}

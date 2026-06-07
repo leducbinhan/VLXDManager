@@ -1,0 +1,117 @@
+﻿@model VLXDManager.Models.ThanhVien
+@{
+    ViewData["Title"] = "Thêm thành viên";
+}
+
+@section Breadcrumb {
+    <li class="breadcrumb-item"><a asp-action="Index">Thành viên</a></li>
+    <li class="breadcrumb-item active">Thêm mới</li>
+}
+
+<div class="page-header">
+    <div class="page-title">
+        <i class="fas fa-user-plus text-primary me-2"></i>Thêm thành viên mới
+    </div>
+    <a asp-action="Index" class="btn btn-o">
+        <i class="fas fa-arrow-left"></i> Quay lại
+    </a>
+</div>
+
+<form asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
+    <div class="row g-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="ch">
+                    <div class="ct"><i class="fas fa-user"></i> Thông tin cá nhân</div>
+                </div>
+                <div class="cb">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Mã thành viên <span class="text-danger">*</span></label>
+                            <input asp-for="MaTVCode" class="form-control"
+                                   value="@ViewBag.MaCode" placeholder="TV001" />
+                            <span asp-validation-for="MaTVCode" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label">Họ và tên <span class="text-danger">*</span></label>
+                            <input asp-for="HoTen" class="form-control"
+                                   placeholder="Nguyễn Văn A" />
+                            <span asp-validation-for="HoTen" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Chức vụ</label>
+                            <select asp-for="ChucVu" class="form-select">
+                                <option value="">-- Chọn chức vụ --</option>
+                                <option>Quản lý</option>
+                                <option>Thu ngân</option>
+                                <option>Thủ kho</option>
+                                <option>Bán hàng</option>
+                                <option>Giao hàng</option>
+                                <option>Kế toán</option>
+                                <option>Bảo vệ</option>
+                                <option>Khác</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Số điện thoại</label>
+                            <div class="fi">
+                                <i class="fas fa-phone ic"></i>
+                                <input asp-for="SoDienThoai" class="form-control"
+                                       placeholder="0901 234 567" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email</label>
+                            <div class="fi">
+                                <i class="fas fa-envelope ic"></i>
+                                <input asp-for="Email" class="form-control"
+                                       placeholder="email@vlxd.com" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Ngày sinh</label>
+                            <input asp-for="NgaySinh" type="date" class="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Ngày vào làm</label>
+                            <input asp-for="NgayVaoLam" type="date" class="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Lương cơ bản (đ/tháng)</label>
+                            <div class="input-group">
+                                <input asp-for="LuongCoBan" type="number" min="0"
+                                       class="form-control text-end" value="0" />
+                                <span class="input-group-text">đ</span>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Địa chỉ</label>
+                            <input asp-for="DiaChi" class="form-control"
+                                   placeholder="Số nhà, đường, phường, quận, tỉnh..." />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Ghi chú</label>
+                            <textarea asp-for="GhiChu" class="form-control" rows="3"
+                                      placeholder="Ghi chú thêm về thành viên..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="ch"><div class="ct"><i class="fas fa-save"></i> Lưu</div></div>
+                <div class="cb d-flex flex-column gap-2">
+                    <button type="submit" class="btn btn-p w-100">
+                        <i class="fas fa-user-plus"></i> Thêm thành viên
+                    </button>
+                    <a asp-action="Index" class="btn btn-o w-100">
+                        <i class="fas fa-times"></i> Hủy
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

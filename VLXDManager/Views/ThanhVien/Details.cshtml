@@ -1,0 +1,163 @@
+@model VLXDManager.Models.ThanhVien
+@{
+    ViewData["Title"] = "Chi tiết thành viên";
+    var namLV = Model.NgayVaoLam.HasValue
+        ? (int)Math.Floor((DateTime.Today - Model.NgayVaoLam.Value).TotalDays / 365)
+        : 0;
+    var (bg, icon) = Model.ChucVu switch
+    {
+        "Quản lý" => ("#1e40af", "fa-crown"),
+        "Thu ngân" => ("#059669", "fa-cash-register"),
+        "Thủ kho" => ("#b45309", "fa-warehouse"),
+        "Giao hàng" => ("#7c3aed", "fa-truck"),
+        _ => ("#0891b2", "fa-user-tie")
+    };
+}
+
+@section Breadcrumb {
+    <li class="breadcrumb-item"><a asp-action="Index">Thành viên</a></li>
+    <li class="breadcrumb-item active">@Model.HoTen</li>
+}
+
+<div class="page-header">
+    <div class="page-title">
+        <i class="fas fa-id-badge text-primary me-2"></i>@Model.HoTen
+        <small>@Model.MaTVCode</small>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="Edit" asp-route-id="@Model.MaTV" class="btn btn-w">
+            <i class="fas fa-pen"></i> Chỉnh sửa
+        </a>
+        <a asp-action="Index" class="btn btn-o">
+            <i class="fas fa-arrow-left"></i> Quay lại
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- PROFILE CARD -->
+    <div class="col-md-4">
+        <div class="card mb-3" style="border-top:4px solid @bg">
+            <div class="cb text-center py-4">
+                <div style="width:80px;height:80px;border-radius:50%;margin:0 auto 16px;
+                    background:@bg;display:flex;align-items:center;
+                    justify-content:center;font-size:32px;font-weight:800;
+                    color:#fff;box-shadow:0 6px 20px rgba(0,0,0,.15)">
+                    @Model.HoTen[0]
+                </div>
+                <div style="font-size:18px;font-weight:700">@Model.HoTen</div>
+                <div class="mt-2">
+                    <span style="background:@bg;color:#fff;padding:4px 12px;
+                        border-radius:20px;font-size:12px;font-weight:600">
+                        <i class="fas @icon me-1"></i>@(Model.ChucVu ?? "Nhân viên")
+                    </span>
+                </div>
+                <code class="text-muted d-block mt-2" style="font-size:12px">@Model.MaTVCode</code>
+            </div>
+        </div>
+
+        <!-- THỐNG KÊ NHANH -->
+        <div class="card mb-3">
+            <div class="cb">
+                <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                    <span class="text-muted small">Thâm niên</span>
+                    <span class="fw-600" style="color:@bg">@namLV năm</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                    <span class="text-muted small">Vào làm</span>
+                    <span class="fw-600">
+                        @(Model.NgayVaoLam.HasValue
+                            ? Model.NgayVaoLam.Value.ToString("dd/MM/yyyy")
+                            : "—")
+                    </span>
+                </div>
+                @if (Model.NgaySinh.HasValue)
+                {
+                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                        <span class="text-muted small">Ngày sinh</span>
+                        <span class="fw-600">@Model.NgaySinh.Value.ToString("dd/MM/yyyy")</span>
+                    </div>
+                }
+                @if (Model.LuongCoBan > 0)
+                {
+                    <div class="d-flex justify-content-between align-items-center py-2">
+                        <span class="text-muted small">Lương cơ bản</span>
+                        <span class="fw-600" style="color:@bg">
+                            @Model.LuongCoBan.ToString("N0")đ
+                        </span>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="d-flex flex-column gap-2">
+            <a asp-action="Edit" asp-route-id="@Model.MaTV" class="btn btn-w w-100">
+                <i class="fas fa-pen"></i> Chỉnh sửa thông tin
+            </a>
+            <a asp-action="Index" class="btn btn-o w-100">
+                <i class="fas fa-users"></i> Danh sách thành viên
+            </a>
+        </div>
+    </div>
+
+    <!-- CHI TIẾT -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="ch">
+                <div class="ct"><i class="fas fa-address-card"></i> Thông tin liên hệ</div>
+            </div>
+            <div class="cb">
+                <div class="row g-3">
+                    @if (!string.IsNullOrEmpty(Model.SoDienThoai))
+                    {
+                        <div class="col-12">
+                            <div class="d-flex align-items-start gap-3 p-3 rounded" style="background:var(--bg)">
+                                <i class="fas fa-phone mt-1" style="width:18px;color:@bg;flex-shrink:0"></i>
+                                <div>
+                                    <div class="text-muted" style="font-size:11.5px">Số điện thoại</div>
+                                    <div class="fw-600" style="font-size:14px">@Model.SoDienThoai</div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Email))
+                    {
+                        <div class="col-12">
+                            <div class="d-flex align-items-start gap-3 p-3 rounded" style="background:var(--bg)">
+                                <i class="fas fa-envelope mt-1" style="width:18px;color:@bg;flex-shrink:0"></i>
+                                <div>
+                                    <div class="text-muted" style="font-size:11.5px">Email</div>
+                                    <div class="fw-600" style="font-size:14px">@Model.Email</div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.DiaChi))
+                    {
+                        <div class="col-12">
+                            <div class="d-flex align-items-start gap-3 p-3 rounded" style="background:var(--bg)">
+                                <i class="fas fa-location-dot mt-1" style="width:18px;color:@bg;flex-shrink:0"></i>
+                                <div>
+                                    <div class="text-muted" style="font-size:11.5px">Địa chỉ</div>
+                                    <div class="fw-600" style="font-size:14px">@Model.DiaChi</div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.GhiChu))
+                    {
+                        <div class="col-12">
+                            <div class="p-3 rounded" style="background:#fffbeb;
+                                border-left:3px solid #f59e0b">
+                                <div class="text-muted small mb-1">
+                                    <i class="fas fa-note-sticky me-1"></i>Ghi chú
+                                </div>
+                                <div>@Model.GhiChu</div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

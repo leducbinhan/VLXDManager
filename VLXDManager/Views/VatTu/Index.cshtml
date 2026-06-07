@@ -1,0 +1,162 @@
+﻿@model VLXDManager.Models.VatTuSearchViewModel
+@{
+    ViewData["Title"] = "Quản lý Vật tư";
+}
+
+@section Breadcrumb {
+    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+    <li class="breadcrumb-item active">Vật tư & Kho</li>
+}
+
+<div class="page-header">
+    <div>
+        <div class="page-title">Quản lý Vật tư & Kho hàng</div>
+        <small class="text-muted">Tổng: @Model.TotalCount vật tư | Trang @Model.Page / @Model.TotalPages</small>
+    </div>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Thêm vật tư
+    </a>
+</div>
+
+<!-- TÌM KIẾM -->
+<div class="search-bar">
+    <form method="get" asp-action="Index">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label">Tìm kiếm</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    <input type="text" name="tuKhoa" value="@Model.TuKhoa" class="form-control" placeholder="Tên vật tư, mã hàng, NCC...">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Loại vật tư</label>
+                @{
+                    var loais = ViewBag.DanhMucLoai as List<SelectListItem> ?? new List<SelectListItem>();
+                }
+
+                <select name="MaLoai" class="form-select">
+                    <option value="">-- Chọn loại --</option>
+
+                    @foreach (var item in loais)
+                    {
+                        if (item.Value == Model.MaLoai?.ToString())
+                        {
+                            <option value="@item.Value" selected>@item.Text</option>
+                        }
+                        else
+                        {
+                            <option value="@item.Value">@item.Text</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <div class="form-check mt-4">
+                    <input class="form-check-input" type="checkbox" name="chiSapHet" value="true" @(Model.ChiSapHet == true ? "checked" : "") id="cbSapHet">
+                    <label class="form-check-label text-danger fw-600" for="cbSapHet">
+                        <i class="fas fa-triangle-exclamation"></i> Chỉ xem sắp hết hàng
+                    </label>
+                </div>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-fill"><i class="fas fa-search"></i> Lọc</button>
+                <a asp-action="Index" class="btn btn-outline"><i class="fas fa-rotate-right"></i></a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- BẢNG VẬT TƯ -->
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table-vlxd">
+            <thead>
+                <tr>
+                    <th>Mã hàng</th>
+                    <th>Tên vật tư</th>
+                    <th>Loại</th>
+                    <th class="text-end">Giá nhập</th>
+                    <th class="text-end">Giá bán</th>
+                    <th class="text-center">Tồn kho</th>
+                    <th>NCC</th>
+                    <th class="text-center">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.VatTu.Any())
+                {
+                    <tr><td colspan="8" class="text-center py-5 text-muted">
+                        <i class="fas fa-inbox fa-3x mb-3 d-block opacity-25"></i>Không tìm thấy vật tư
+                    </td></tr>
+                }
+                @foreach (var vt in Model.VatTu)
+                {
+                    var isLow = vt.SoLuongTon <= vt.SoLuongMin;
+                    <tr>
+                        <td><code class="text-primary">@vt.MaHang</code></td>
+                        <td>
+                            <div class="fw-600">@vt.TenVatTu</div>
+                            @if (!string.IsNullOrEmpty(vt.MoTa))
+                            {
+                                <div class="text-muted small">@(vt.MoTa.Length > 50 ? vt.MoTa[..50] + "..." : vt.MoTa)</div>
+                            }
+                        </td>
+                        <td><span class="badge bg-light text-dark border">@vt.DanhMucLoai?.TenLoai</span></td>
+                        <td class="text-end">@vt.GiaNhap.ToString("N0")đ</td>
+                        <td class="text-end fw-600 text-primary">@vt.GiaBan.ToString("N0")đ</td>
+                        <td class="text-center">
+                            @if (isLow)
+                            {
+                                <span class="badge-status badge-saphet">
+                                    <i class="fas fa-triangle-exclamation"></i> @vt.SoLuongTon @vt.DonVi
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="fw-600 text-success">@vt.SoLuongTon <small class="text-muted">@vt.DonVi</small></span>
+                            }
+                        </td>
+                        <td class="text-muted small">@(vt.NhaCungCap?.Length > 30 ? vt.NhaCungCap[..30] + "..." : vt.NhaCungCap)</td>
+                        <td>
+                            <div class="d-flex gap-1 justify-content-center">
+                                <a asp-action="Details" asp-route-id="@vt.MaVatTu" class="btn btn-outline btn-icon" title="Xem chi tiết">
+                                    <i class="fas fa-eye text-primary"></i>
+                                </a>
+                                <a asp-action="Edit" asp-route-id="@vt.MaVatTu" class="btn btn-outline btn-icon" title="Chỉnh sửa">
+                                    <i class="fas fa-pen text-warning"></i>
+                                </a>
+                                <form id="del@(vt.MaVatTu)" asp-action="Delete" asp-route-id="@vt.MaVatTu" method="post" style="display:inline">
+                                    @Html.AntiForgeryToken()
+                                </form>
+                                <button type="button" class="btn btn-outline btn-icon" title="Xóa"
+                                    onclick="confirmDelete('del@(vt.MaVatTu)', '@vt.TenVatTu')">
+                                    <i class="fas fa-trash text-danger"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- PHÂN TRANG -->
+    @if (Model.TotalPages > 1)
+    {
+        <div class="pagination-vlxd">
+            @if (Model.Page > 1)
+            {
+                <a href="?page=@(Model.Page-1)&tuKhoa=@Model.TuKhoa&maLoai=@Model.MaLoai" class="page-btn"><i class="fas fa-chevron-left"></i></a>
+            }
+            @for (int p = Math.Max(1, Model.Page - 2); p <= Math.Min(Model.TotalPages, Model.Page + 2); p++)
+            {
+                <a href="?page=@p&tuKhoa=@Model.TuKhoa&maLoai=@Model.MaLoai" class="page-btn @(p == Model.Page ? "active" : "")">@p</a>
+            }
+            @if (Model.Page < Model.TotalPages)
+            {
+                <a href="?page=@(Model.Page+1)&tuKhoa=@Model.TuKhoa&maLoai=@Model.MaLoai" class="page-btn"><i class="fas fa-chevron-right"></i></a>
+            }
+        </div>
+    }
+</div>

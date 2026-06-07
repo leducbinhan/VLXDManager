@@ -1,0 +1,127 @@
+﻿@* DonHang/Index.cshtml *@
+@model VLXDManager.Models.DonHangSearchViewModel
+@{
+    ViewData["Title"] = "Quản lý Đơn hàng";
+}
+
+@section Breadcrumb {
+    <li class="breadcrumb-item active">Đơn hàng bán</li>
+}
+
+<div class="page-header">
+    <div>
+        <div class="page-title">Quản lý Đơn hàng Bán</div>
+        <small class="text-muted">Tổng: @Model.TotalCount đơn</small>
+    </div>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Tạo đơn mới
+    </a>
+</div>
+
+<!-- TÌM KIẾM -->
+<div class="search-bar">
+    <form method="get">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label">Tìm kiếm</label>
+                <input type="text" name="tuKhoa" value="@Model.TuKhoa" class="form-control" placeholder="Số ĐH, tên khách...">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Trạng thái</label>
+                <select name="trangThai" class="form-select">
+                    <option value="">-- Tất cả --</option>
+                    
+                    <option value="Mới tạo" selected="@(Model.TrangThai == "Mới tạo")">Mới tạo</option>
+
+                    <option value="Đã xác nhận" selected="@(Model.TrangThai == "Đã xác nhận")">Đã xác nhận</option>
+
+                    <option value="Đã giao" selected="@(Model.TrangThai == "Đã giao")">Đã giao</option>
+
+                    <option value="Đã hủy" selected="@(Model.TrangThai == "Đã hủy")">Đã hủy</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Từ ngày</label>
+                <input type="date" name="tuNgay" value="@Model.TuNgay?.ToString("yyyy-MM-dd")" class="form-control">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Đến ngày</label>
+                <input type="date" name="denNgay" value="@Model.DenNgay?.ToString("yyyy-MM-dd")" class="form-control">
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-fill"><i class="fas fa-search"></i> Lọc</button>
+                <a asp-action="Index" class="btn btn-outline"><i class="fas fa-rotate-right"></i></a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- BẢNG ĐƠN HÀNG -->
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table-vlxd">
+            <thead>
+                <tr>
+                    <th>Số ĐH</th>
+                    <th>Khách hàng</th>
+                    <th>Ngày bán</th>
+                    <th class="text-end">Thành tiền</th>
+                    <th class="text-end">Đã TT</th>
+                    <th class="text-end">Còn lại</th>
+                    <th class="text-center">Trạng thái</th>
+                    <th class="text-center">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.DonHang.Any())
+                {
+                    <tr><td colspan="8" class="text-center py-5 text-muted">
+                        <i class="fas fa-inbox fa-3x mb-3 d-block opacity-25"></i>Không có đơn hàng nào
+                    </td></tr>
+                }
+                @foreach (var dh in Model.DonHang)
+                {
+                    var badge = dh.TrangThai switch {
+                        "Đã giao" => "badge-giao",
+                        "Đã xác nhận" => "badge-xacnhan",
+                        "Đã hủy" => "badge-huy",
+                        _ => "badge-moi"
+                    };
+                    <tr>
+                        <td><a asp-action="Details" asp-route-id="@dh.MaDH" class="fw-700 text-primary">@dh.SoDH</a></td>
+                        <td>
+                            <div>@(dh.KhachHang?.TenKH ?? "Khách lẻ")</div>
+                            <div class="text-muted small">@dh.KhachHang?.SoDienThoai</div>
+                        </td>
+                        <td>@dh.NgayBan.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td class="text-end fw-600">@dh.ThanhTien.ToString("N0")đ</td>
+                        <td class="text-end text-success">@dh.DaThanhToan.ToString("N0")đ</td>
+                        <td class="text-end @(dh.ConLai > 0 ? "text-danger fw-600" : "text-muted")">
+                            @dh.ConLai.ToString("N0")đ
+                        </td>
+                        <td class="text-center"><span class="badge-status @badge">@dh.TrangThai</span></td>
+                        <td>
+                            <div class="d-flex gap-1 justify-content-center">
+                                <a asp-action="Details" asp-route-id="@dh.MaDH" class="btn btn-outline btn-icon" title="Xem chi tiết">
+                                    <i class="fas fa-eye text-primary"></i>
+                                </a>
+                                <a asp-action="In" asp-route-id="@dh.MaDH" target="_blank" class="btn btn-outline btn-icon" title="In đơn hàng">
+                                    <i class="fas fa-print text-success"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    @if (Model.TotalPages > 1)
+    {
+        <div class="pagination-vlxd">
+            @for (int p = 1; p <= Model.TotalPages; p++)
+            {
+                <a href="?page=@p&tuKhoa=@Model.TuKhoa&trangThai=@Model.TrangThai" class="page-btn @(p == Model.Page ? "active" : "")">@p</a>
+            }
+        </div>
+    }
+</div>

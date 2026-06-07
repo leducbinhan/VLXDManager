@@ -1,0 +1,125 @@
+﻿@model List<VLXDManager.Models.KhachHang>
+@{
+    ViewData["Title"] = "Quản lý Khách hàng";
+    int totalCount = ViewBag.TotalCount ?? 0;
+    int page = ViewBag.Page ?? 1;
+    int totalPages = ViewBag.TotalPages ?? 1;
+}
+
+@section Breadcrumb {
+    <li class="breadcrumb-item active">Khách hàng</li>
+}
+
+<div class="page-header">
+    <div>
+        <div class="page-title">Quản lý Khách hàng</div>
+        <small class="text-muted">Tổng: @totalCount khách hàng</small>
+    </div>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Thêm khách hàng
+    </a>
+</div>
+
+<div class="search-bar">
+    <form method="get">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-5">
+                <label class="form-label">Tìm kiếm</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    <input type="text" name="tuKhoa" value="@ViewBag.TuKhoa" class="form-control" placeholder="Tên, mã KH, số điện thoại...">
+                </div>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-fill"><i class="fas fa-search"></i> Tìm</button>
+                <a asp-action="Index" class="btn btn-outline"><i class="fas fa-rotate-right"></i></a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table-vlxd">
+            <thead>
+                <tr>
+                    <th>Mã KH</th>
+                    <th>Tên khách hàng</th>
+                    <th>Số điện thoại</th>
+                    <th>Email</th>
+                    <th>Địa chỉ</th>
+                    <th>Ngày tạo</th>
+                    <th class="text-center">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            <i class="fas fa-users fa-3x mb-3 d-block opacity-25"></i>Không tìm thấy khách hàng
+                        </td>
+                    </tr>
+                }
+                @foreach (var kh in Model)
+                {
+                    <tr>
+                        <td><code class="text-primary">@kh.MaKHCode</code></td>
+                        <td>
+                            <div class="fw-600">@kh.TenKH</div>
+                            @if (!string.IsNullOrEmpty(kh.GhiChu))
+                            {
+                                <div class="text-muted small">@kh.GhiChu</div>
+                            }
+                        </td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(kh.SoDienThoai))
+                            {
+                                <a href="tel:@kh.SoDienThoai" class="text-decoration-none">
+                                    <i class="fas fa-phone text-success me-1"></i>@kh.SoDienThoai
+                                </a>
+                            }
+                        </td>
+                        <td class="text-muted small">@kh.Email</td>
+                        <td class="text-muted small" style="max-width:200px">@kh.DiaChi</td>
+                        <td class="text-muted small">@kh.NgayTao.ToString("dd/MM/yyyy")</td>
+                        <td>
+                            <div class="d-flex gap-1 justify-content-center">
+                                <a asp-action="Details" asp-route-id="@kh.MaKH" class="btn btn-outline btn-icon" title="Chi tiết">
+                                    <i class="fas fa-eye text-primary"></i>
+                                </a>
+                                <a asp-action="Edit" asp-route-id="@kh.MaKH" class="btn btn-outline btn-icon" title="Sửa">
+                                    <i class="fas fa-pen text-warning"></i>
+                                </a>
+                                <form id="delKH@(kh.MaKH)" asp-action="Delete" asp-route-id="@kh.MaKH" method="post" style="display:inline">
+                                    @Html.AntiForgeryToken()
+                                </form>
+                                <button type="button" class="btn btn-outline btn-icon" title="Xóa"
+                                        onclick="confirmDelete('delKH@(kh.MaKH)', '@kh.TenKH')">
+                                    <i class="fas fa-trash text-danger"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    @if (totalPages > 1)
+    {
+        <div class="pagination-vlxd">
+            @if (page > 1)
+            {
+                <a href="?page=@(page - 1)&tuKhoa=@ViewBag.TuKhoa" class="page-btn"><i class="fas fa-chevron-left"></i></a>
+            }
+            @for (int p = Math.Max(1, page - 2); p <= Math.Min(totalPages, page + 2); p++)
+            {
+                <a href="?page=@p&tuKhoa=@ViewBag.TuKhoa" class="page-btn @(p == page ? "active" : "")">@p</a>
+            }
+            @if (page < totalPages)
+            {
+                <a href="?page=@(page + 1)&tuKhoa=@ViewBag.TuKhoa" class="page-btn"><i class="fas fa-chevron-right"></i></a>
+            }
+        </div>
+    }
+</div>

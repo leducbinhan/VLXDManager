@@ -1,0 +1,124 @@
+﻿@* VatTu/Create.cshtml *@
+@model VLXDManager.Models.VatTu
+@{
+    ViewData["Title"] = "Thêm Vật tư mới";
+}
+
+@section Breadcrumb {
+    <li class="breadcrumb-item"><a asp-action="Index">Vật tư</a></li>
+    <li class="breadcrumb-item active">Thêm mới</li>
+}
+
+<div class="page-header">
+    <div class="page-title"><i class="fas fa-plus-circle text-primary me-2"></i>Thêm Vật tư mới</div>
+    <a asp-action="Index" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Quay lại</a>
+</div>
+
+<form asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
+    <div class="row g-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header"><div class="card-title"><i class="fas fa-info-circle"></i> Thông tin vật tư</div></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="MaHang" class="form-label"></label>
+                            <input asp-for="MaHang" class="form-control" placeholder="VD: XM001" />
+                            <span asp-validation-for="MaHang" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="MaLoai" class="form-label">
+                                Loại vật tư
+                            </label>
+
+                            <select asp-for="MaLoai"
+                                    asp-items="ViewBag.DanhMucLoai"
+                                    class="form-select">
+
+                                <option value="">-- Chọn loại --</option>
+
+                            </select>
+
+                            <span asp-validation-for="MaLoai"
+                                  class="text-danger small">
+                            </span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="TenVatTu" class="form-label">Tên vật tư <span class="text-danger">*</span></label>
+                            <input asp-for="TenVatTu" class="form-control" placeholder="VD: Xi măng Hà Tiên PCB40 50kg" />
+                            <span asp-validation-for="TenVatTu" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="DonVi" class="form-label">Đơn vị <span class="text-danger">*</span></label>
+                            <select asp-for="DonVi" class="form-select">
+                                <option>Bao</option>
+                                <option>Cái</option>
+                                <option>Cây</option>
+                                <option>M3</option>
+                                <option>Tấn</option>
+                                <option>Kg</option>
+                                <option>Mét</option>
+                                <option>Viên</option>
+                                <option>Thùng</option>
+                                <option>Cuộn</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="GiaNhap" class="form-label"></label>
+                            <div class="input-group">
+                                <input asp-for="GiaNhap" class="form-control text-end" type="number" min="0" />
+                                <span class="input-group-text">đ</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="GiaBan" class="form-label"></label>
+                            <div class="input-group">
+                                <input asp-for="GiaBan" class="form-control text-end" type="number" min="0" />
+                                <span class="input-group-text">đ</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="SoLuongTon" class="form-label"></label>
+                            <input asp-for="SoLuongTon" class="form-control" type="number" min="0" />
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="SoLuongMin" class="form-label">Cảnh báo khi tồn dưới</label>
+                            <input asp-for="SoLuongMin" class="form-control" type="number" min="0" />
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="NhaCungCap" class="form-label"></label>
+                            <input asp-for="NhaCungCap" class="form-control" placeholder="Tên công ty cung cấp..." />
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="MoTa" class="form-label"></label>
+                            <textarea asp-for="MoTa" class="form-control" rows="3" placeholder="Mô tả thêm về vật tư..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header"><div class="card-title"><i class="fas fa-save"></i> Lưu vật tư</div></div>
+                <div class="card-body d-flex flex-column gap-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-save"></i> Lưu vật tư
+                    </button>
+                    <a asp-action="Index" class="btn btn-outline w-100">
+                        <i class="fas fa-times"></i> Hủy
+                    </a>
+                </div>
+            </div>
+            <div class="card mt-3">
+                <div class="card-body">
+                    <div class="text-muted small">
+                        <i class="fas fa-lightbulb text-warning me-1"></i>
+                        <strong>Lưu ý:</strong> Mã hàng phải duy nhất trong hệ thống. Giá nhập dùng để tính giá trị kho hàng.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

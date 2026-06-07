@@ -1,0 +1,178 @@
+﻿@model List<VLXDManager.Models.DonHang>
+@{
+    ViewData["Title"] = "Báo cáo Công nợ";
+    decimal tongCongNo = ViewBag.TongCongNo ?? 0;
+    // Nhóm theo khách hàng
+    var nhomKH = Model
+        .GroupBy(d => new { MaKH = d.MaKH, TenKH = d.KhachHang?.TenKH ?? "Khách lẻ", SDT = d.KhachHang?.SoDienThoai })
+        .Select(g => new
+        {
+            g.Key.MaKH,
+            g.Key.TenKH,
+            g.Key.SDT,
+            SoDon = g.Count(),
+            TongNo = g.Sum(d => d.ConLai)
+        })
+        .OrderByDescending(x => x.TongNo)
+        .ToList();
+}
+
+@section Breadcrumb {
+    <li class="breadcrumb-item">Báo cáo</li>
+    <li class="breadcrumb-item active">Công nợ</li>
+}
+
+<div class="page-header">
+    <div class="page-title"><i class="fas fa-hand-holding-dollar text-danger me-2"></i>Báo cáo Công nợ</div>
+    <a href="javascript:window.print()" class="btn btn-outline no-print">
+        <i class="fas fa-print"></i> In báo cáo
+    </a>
+</div>
+
+<!-- TỔNG KẾT -->
+<div class="stats-grid mb-4">
+    <div class="stat-card red">
+        <div class="stat-icon"><i class="fas fa-money-bill-wave"></i></div>
+        <div>
+            <div class="stat-value" style="font-size:18px">@tongCongNo.ToString("N0")đ</div>
+            <div class="stat-label">Tổng công nợ</div>
+        </div>
+    </div>
+    <div class="stat-card amber">
+        <div class="stat-icon"><i class="fas fa-file-invoice"></i></div>
+        <div>
+            <div class="stat-value">@Model.Count</div>
+            <div class="stat-label">Số đơn còn nợ</div>
+        </div>
+    </div>
+    <div class="stat-card blue">
+        <div class="stat-icon"><i class="fas fa-users"></i></div>
+        <div>
+            <div class="stat-value">@nhomKH.Count</div>
+            <div class="stat-label">Khách hàng còn nợ</div>
+        </div>
+    </div>
+    <div class="stat-card green">
+        <div class="stat-icon"><i class="fas fa-hand-holding-usd"></i></div>
+        <div>
+            <div class="stat-value" style="font-size:18px">@Model.Sum(d => d.DaThanhToan).ToString("N0")đ</div>
+            <div class="stat-label">Đã thu tổng cộng</div>
+        </div>
+    </div>
+</div>
+
+<!-- CÔNG NỢ THEO KHÁCH HÀNG -->
+<div class="card mb-4">
+    <div class="card-header">
+        <div class="card-title"><i class="fas fa-users"></i> Công nợ theo khách hàng</div>
+    </div>
+    <div class="card-body p-0">
+        <table class="table-vlxd">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Khách hàng</th>
+                    <th>Số điện thoại</th>
+                    <th class="text-center">Số đơn</th>
+                    <th class="text-end">Tổng nợ</th>
+                    <th class="text-center">Mức độ</th>
+                    <th class="text-center no-print">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    int rank = 1;
+                }
+                @foreach (var kh in nhomKH)
+                {
+                    var mucDo = kh.TongNo > 10000000 ? ("Cao", "badge-huy") :
+                                kh.TongNo > 3000000 ? ("Trung bình", "badge-saphet") :
+                                                       ("Thấp", "badge-xacnhan");
+                    <tr>
+                        <td class="text-muted">@rank</td>
+                        <td class="fw-600">@kh.TenKH</td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(kh.SDT))
+                            {
+                                <a href="tel:@kh.SDT" class="text-dark text-decoration-none">
+                                    <i class="fas fa-phone text-success me-1 small"></i>@kh.SDT
+                                </a>
+                            }
+                        </td>
+                        <td class="text-center">@kh.SoDon đơn</td>
+                        <td class="text-end fw-700 text-danger">@kh.TongNo.ToString("N0")đ</td>
+                        <td class="text-center">
+                            <span class="badge-status @mucDo.Item2">@mucDo.Item1</span>
+                        </td>
+                        <td class="text-center no-print">
+                            @if (kh.MaKH.HasValue)
+                            {
+                                <a asp-controller="KhachHang" asp-action="Details" asp-route-id="@kh.MaKH"
+                                   class="btn btn-outline btn-icon" title="Xem khách hàng">
+                                    <i class="fas fa-eye text-primary"></i>
+                                </a>
+                            }
+                        </td>
+                    </tr>
+                    rank++;
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- CHI TIẾT ĐƠN HÀNG CÒN NỢ -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title"><i class="fas fa-list"></i> Chi tiết đơn hàng còn nợ</div>
+    </div>
+    <div class="card-body p-0">
+        <table class="table-vlxd">
+            <thead>
+                <tr>
+                    <th>Số ĐH</th>
+                    <th>Khách hàng</th>
+                    <th>Ngày bán</th>
+                    <th class="text-end">Thành tiền</th>
+                    <th class="text-end">Đã TT</th>
+                    <th class="text-end">Còn nợ</th>
+                    <th class="text-center">Trạng thái</th>
+                    <th class="text-center no-print"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var dh in Model)
+                {
+                    var badge = dh.TrangThai switch
+                    {
+                        "Đã giao" => "badge-giao",
+                        "Đã xác nhận" => "badge-xacnhan",
+                        _ => "badge-moi"
+                    };
+                    <tr>
+                        <td><span class="fw-600 text-primary">@dh.SoDH</span></td>
+                        <td>@(dh.KhachHang?.TenKH ?? "Khách lẻ")</td>
+                        <td class="text-muted small">@dh.NgayBan.ToString("dd/MM/yyyy")</td>
+                        <td class="text-end">@dh.ThanhTien.ToString("N0")đ</td>
+                        <td class="text-end text-success">@dh.DaThanhToan.ToString("N0")đ</td>
+                        <td class="text-end fw-700 text-danger">@dh.ConLai.ToString("N0")đ</td>
+                        <td class="text-center"><span class="badge-status @badge">@dh.TrangThai</span></td>
+                        <td class="text-center no-print">
+                            <a asp-controller="DonHang" asp-action="Details" asp-route-id="@dh.MaDH"
+                               class="btn btn-outline btn-icon">
+                                <i class="fas fa-eye text-primary"></i>
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot style="background:#fef2f2">
+                <tr>
+                    <td colspan="5" class="fw-700 px-4 py-3 text-danger">TỔNG CÔNG NỢ</td>
+                    <td class="text-end fw-800 text-danger px-4" style="font-size:16px">@tongCongNo.ToString("N0")đ</td>
+                    <td colspan="2"></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>

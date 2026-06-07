@@ -1,0 +1,127 @@
+﻿@model VLXDManager.Models.VatTu
+@{
+    ViewData["Title"] = "Chỉnh sửa Vật tư";
+    var danhMucLoai = ViewBag.DanhMucLoai as Microsoft.AspNetCore.Mvc.Rendering.SelectList;
+}
+
+@section Breadcrumb {
+    <li class="breadcrumb-item"><a asp-action="Index">Vật tư</a></li>
+    <li class="breadcrumb-item active">Chỉnh sửa</li>
+}
+
+<div class="page-header">
+    <div class="page-title"><i class="fas fa-pen text-warning me-2"></i>Chỉnh sửa: @Model.TenVatTu</div>
+    <div class="d-flex gap-2">
+        <a asp-action="Details" asp-route-id="@Model.MaVatTu" class="btn btn-outline">
+            <i class="fas fa-eye"></i> Xem
+        </a>
+        <a asp-action="Index" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Quay lại</a>
+    </div>
+</div>
+
+<form asp-action="Edit" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="MaVatTu" />
+    <input type="hidden" asp-for="NgayTao" />
+    <div class="row g-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header"><div class="card-title"><i class="fas fa-info-circle"></i> Thông tin vật tư</div></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-600">Mã hàng</label>
+                            <input asp-for="MaHang" class="form-control" />
+                            <span asp-validation-for="MaHang" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-600">
+                                Loại vật tư <span class="text-danger">*</span>
+                            </label>
+
+                            <select asp-for="MaLoai"
+                                    asp-items="ViewBag.DanhMucLoai"
+                                    class="form-select">
+
+                                <option value="">-- Chọn loại --</option>
+
+                            </select>
+
+                            <span asp-validation-for="MaLoai" class="text-danger"></span>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-600">Tên vật tư <span class="text-danger">*</span></label>
+                            <input asp-for="TenVatTu" class="form-control" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-600">Đơn vị</label>
+                            <select asp-for="DonVi" class="form-select">
+                                <option>Bao</option><option>Cái</option><option>Cây</option>
+                                <option>M3</option><option>Tấn</option><option>Kg</option>
+                                <option>Mét</option><option>Viên</option><option>Thùng</option><option>Cuộn</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-600">Giá nhập</label>
+                            <div class="input-group">
+                                <input asp-for="GiaNhap" class="form-control text-end" type="number" min="0" />
+                                <span class="input-group-text">đ</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-600">Giá bán</label>
+                            <div class="input-group">
+                                <input asp-for="GiaBan" class="form-control text-end" type="number" min="0" />
+                                <span class="input-group-text">đ</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-600">Tồn kho hiện tại</label>
+                            <input asp-for="SoLuongTon" class="form-control" type="number" min="0" />
+                            <div class="text-muted small mt-1"><i class="fas fa-info-circle"></i> Có thể điều chỉnh thủ công</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-600">Cảnh báo khi tồn dưới</label>
+                            <input asp-for="SoLuongMin" class="form-control" type="number" min="0" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-600">Nhà cung cấp</label>
+                            <input asp-for="NhaCungCap" class="form-control" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-600">Mô tả</label>
+                            <textarea asp-for="MoTa" class="form-control" rows="3"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input asp-for="TrangThai" class="form-check-input" type="checkbox" role="switch" />
+                                <label asp-for="TrangThai" class="form-check-label fw-600">Đang kinh doanh</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header"><div class="card-title"><i class="fas fa-save"></i> Lưu thay đổi</div></div>
+                <div class="card-body d-flex flex-column gap-2">
+                    <button type="submit" class="btn btn-warning w-100">
+                        <i class="fas fa-save"></i> Lưu thay đổi
+                    </button>
+                    <a asp-action="Index" class="btn btn-outline w-100">
+                        <i class="fas fa-times"></i> Hủy
+                    </a>
+                </div>
+            </div>
+            <div class="card mt-3">
+                <div class="card-body">
+                    <div class="small text-muted">
+                        <div><i class="fas fa-clock me-1"></i> Tạo: @Model.NgayTao.ToString("dd/MM/yyyy HH:mm")</div>
+                        <div class="mt-1"><i class="fas fa-edit me-1"></i> Mã hàng: <code>@Model.MaHang</code></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
