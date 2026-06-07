@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("VLXDManager")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5869e131ff5f898e2795a47b5174cd85f461179e")]
 [assembly: System.Reflection.AssemblyProductAttribute("VLXDManager")]
 [assembly: System.Reflection.AssemblyTitleAttribute("VLXDManager")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
